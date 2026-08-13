@@ -2,6 +2,9 @@
 
 Static portfolio website prepared for GitHub and Vercel deployment.
 
+GitHub Pages is deployed automatically from `main` by the workflow in
+`.github/workflows/deploy-pages.yml`.
+
 ## Structure
 
 - `index.html` — homepage and application code
