@@ -1,4 +1,4 @@
-# LIN YANG Portfolio
+# LIN  Portfolio
 
 Static portfolio website prepared for GitHub and Vercel deployment.
 
