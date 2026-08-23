@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>LIN YANG — Video Editor / Motion Designer / AIGC Creator</title>
   <meta name="description" content="LIN YANG 的影视后期、动态设计与 AIGC 影像个人作品集。">
-  <meta name="theme-color" content="#050308">
+  <meta name="theme-color" content="#050505">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com" defer></script>
@@ -13,27 +13,42 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="modulepreload" href="https://unpkg.com/ogl@1.0.11/src/index.js" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
 
   <!-- React 18 & ReactDOM & Babel CDN -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin defer></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin defer></script>
+  <script>
+    (() => {
+      let oglPromise;
+      window.__getGradientWavesOgl = () => {
+        if (!oglPromise) {
+          oglPromise = import('https://unpkg.com/ogl@1.0.11/src/index.js').catch(error => {
+            oglPromise = null;
+            throw error;
+          });
+        }
+        return oglPromise;
+      };
+    })();
+  </script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js" defer></script>
 
   <style>
     body {
       font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background-color: #050308;
+      background-color: #050505;
       color: #ffffff;
       overflow-x: hidden;
     }
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #050308; }
+    ::-webkit-scrollbar-track { background: #050505; }
     ::-webkit-scrollbar-thumb { background: #2a1b3d; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #A855F7; }
   </style>
 </head>
-<body class="bg-[#050308] text-white">
+<body class="bg-[#050505] text-white">
 
   <div id="root"></div>
 
@@ -61,21 +76,14 @@
           100% { transform: translate3d(0, 0, 0) rotateX(0) scale(1); opacity: 1; }
         }
 
-        @keyframes cinematicLoaderExit {
-          0%, 76% { opacity: 1; visibility: visible; }
+        @keyframes cinematicIntroExit {
+          0% { opacity: 1; visibility: visible; }
           100% { opacity: 0; visibility: hidden; }
         }
 
-        @keyframes cinematicLoaderFill {
-          0% { transform: scaleX(0); }
-          28% { transform: scaleX(0.24); }
-          62% { transform: scaleX(0.68); }
-          100% { transform: scaleX(1); }
-        }
-
-        @keyframes cinematicLoaderGlow {
-          0%, 100% { opacity: 0.35; }
-          50% { opacity: 0.82; }
+        @keyframes cinematicIntroBrandReveal {
+          0% { opacity: 0; filter: blur(12px); transform: translate3d(0, 18px, 0); }
+          100% { opacity: 1; filter: blur(0); transform: translate3d(0, 0, 0); }
         }
 
         .cinematic-intro {
@@ -86,56 +94,129 @@
           display: grid;
           place-items: center;
           overflow: hidden;
-          background: #020104;
-          animation: cinematicLoaderExit 1.7s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+          background: #010102;
           will-change: opacity;
         }
 
-        .cinematic-intro__loader {
-          width: min(440px, calc(100vw - 64px));
+        .cinematic-intro.is-leaving {
+          animation: cinematicIntroExit 0.52s cubic-bezier(0.76, 0, 0.24, 1) forwards;
         }
 
-        .cinematic-intro__track {
-          position: relative;
-          width: 100%;
-          height: 1px;
-          overflow: visible;
-          background: rgba(255, 255, 255, 0.14);
-        }
-
-        .cinematic-intro__fill {
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, #CCFF00 0%, #c084fc 62%, #67e8f9 100%);
-          box-shadow: 0 0 20px rgba(192, 132, 252, 0.58);
-          transform: scaleX(0);
-          transform-origin: left center;
-          animation: cinematicLoaderFill 1.28s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-          will-change: transform;
-        }
-
-        .cinematic-intro__fill::after {
+        .cinematic-intro::before {
           content: '';
           position: absolute;
-          top: 50%;
-          right: -2px;
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: #fff;
-          box-shadow: 0 0 18px #c084fc;
-          transform: translateY(-50%);
-          animation: cinematicLoaderGlow 0.65s ease-in-out infinite;
+          inset: 0;
+          background:
+            linear-gradient(90deg, rgba(0, 0, 0, 0.96), transparent 24%, transparent 76%, rgba(0, 0, 0, 0.96)),
+            linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.92));
+          z-index: 5;
+        }
+
+        .cinematic-intro__brand {
+          position: relative;
+          z-index: 3;
+          width: min(430px, calc(100vw - 64px));
+          opacity: 0;
+          animation: cinematicIntroBrandReveal 1.05s 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .cinematic-intro__word {
+          position: relative;
+          isolation: isolate;
+          color: rgba(255, 255, 255, 0.16);
+          font-size: clamp(2.2rem, 5.3vw, 4.8rem);
+          font-weight: 900;
+          line-height: 0.9;
+          letter-spacing: -0.075em;
+          text-transform: uppercase;
+          -webkit-text-fill-color: currentColor;
+        }
+
+        .cinematic-intro__word::after {
+          content: attr(data-text);
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          color: #CCFF00;
+          -webkit-text-fill-color: #CCFF00;
+          -webkit-mask-image: linear-gradient(
+            90deg,
+            #000 0%,
+            #000 var(--intro-progress, 0%),
+            rgba(0, 0, 0, 0.72) calc(var(--intro-progress, 0%) + 1.4%),
+            transparent calc(var(--intro-progress, 0%) + 4%),
+            transparent 100%
+          );
+          mask-image: linear-gradient(
+            90deg,
+            #000 0%,
+            #000 var(--intro-progress, 0%),
+            rgba(0, 0, 0, 0.72) calc(var(--intro-progress, 0%) + 1.4%),
+            transparent calc(var(--intro-progress, 0%) + 4%),
+            transparent 100%
+          );
+          -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+          filter: blur(0.28px);
+          text-shadow: 0 0 12px rgba(204, 255, 0, 0.16);
+          will-change: -webkit-mask-image, mask-image;
         }
 
         .cinematic-intro__meta {
           display: flex;
+          align-items: center;
           justify-content: space-between;
-          margin-top: 13px;
-          color: rgba(255, 255, 255, 0.46);
-          font: 600 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
-          letter-spacing: 0.22em;
+          gap: 1.5rem;
+          margin-top: 0.72rem;
+          color: rgba(255, 255, 255, 0.52);
+          font: 600 0.58rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+          letter-spacing: 0.13em;
           text-transform: uppercase;
+        }
+
+        .cinematic-intro__signature {
+          position: absolute;
+          right: clamp(1.5rem, 4vw, 4rem);
+          bottom: clamp(1.5rem, 4vw, 3.5rem);
+          z-index: 6;
+          color: rgba(204, 255, 0, 0.5);
+          font: 700 0.58rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+        }
+
+        .cinematic-intro__grain {
+          position: absolute;
+          inset: 0;
+          z-index: 6;
+          opacity: 0.075;
+          background-image: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0 0.42px, transparent 0.62px);
+          background-position: 0 0;
+          background-size: 5px 5px;
+          mix-blend-mode: soft-light;
+        }
+
+        @media (max-width: 640px) {
+          .cinematic-intro__brand {
+            width: calc(100vw - 48px);
+            margin-left: 0;
+          }
+
+          .cinematic-intro__word {
+            font-size: clamp(2.15rem, 12vw, 3.4rem);
+          }
+
+          .cinematic-intro__meta {
+            gap: 0.8rem;
+            font-size: 0.5rem;
+            letter-spacing: 0.1em;
+          }
+
+          .cinematic-intro__signature {
+            right: 1.25rem;
+            bottom: 1.5rem;
+            font-size: 0.5rem;
+          }
         }
 
         .cinematic-reveal {
@@ -176,6 +257,60 @@
         .cinematic-reveal-grid.is-visible > *:nth-child(4) { transition-delay: 210ms; }
         .cinematic-reveal-grid.is-visible > *:nth-child(5) { transition-delay: 280ms; }
         .cinematic-reveal-grid.is-visible > *:nth-child(6) { transition-delay: 350ms; }
+
+        .visual-journal-fold {
+          display: grid;
+          grid-template-rows: 0fr;
+          margin-top: 0;
+          opacity: 0;
+          transform: translate3d(0, -12px, 0);
+          transition:
+            grid-template-rows 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+            margin-top 0.72s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.42s ease,
+            transform 0.62s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .visual-journal-fold.is-open {
+          grid-template-rows: 1fr;
+          margin-top: 1.25rem;
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+        }
+
+        .visual-journal-fold__inner {
+          min-height: 0;
+          overflow: hidden;
+          visibility: hidden;
+          transition: visibility 0s linear 0.72s;
+        }
+
+        .visual-journal-fold.is-open > .visual-journal-fold__inner {
+          visibility: visible;
+          transition-delay: 0s;
+        }
+
+        .journal-fold-card {
+          opacity: 0;
+          transform: translate3d(0, 34px, 0) scale(0.985);
+        }
+
+        .visual-journal-fold.is-open .journal-fold-card {
+          animation: journalFoldCardReveal 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(2) { animation-delay: 55ms; }
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(3) { animation-delay: 110ms; }
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(4) { animation-delay: 165ms; }
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(5) { animation-delay: 220ms; }
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(6) { animation-delay: 275ms; }
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(7) { animation-delay: 330ms; }
+        .visual-journal-fold.is-open .journal-fold-grid > *:nth-child(n+8) { animation-delay: 385ms; }
+
+        @keyframes journalFoldCardReveal {
+          0% { opacity: 0; transform: translate3d(0, 34px, 0) scale(0.985); }
+          100% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+        }
 
         .cinematic-card {
           transform: translate3d(0, 0, 0);
@@ -417,6 +552,23 @@
             transform: none;
             animation: none;
           }
+
+          .visual-journal-fold {
+            transform: none;
+            transition: none;
+          }
+
+          .visual-journal-fold.is-open {
+            grid-template-rows: 1fr;
+            opacity: 1;
+          }
+
+          .journal-fold-card,
+          .visual-journal-fold.is-open .journal-fold-card {
+            opacity: 1;
+            transform: none;
+            animation: none;
+          }
         }
 
         .motion-scroll-track {
@@ -467,6 +619,81 @@
         transition: width .45s cubic-bezier(.22, 1, .36, 1), background-color .35s ease, opacity .35s ease;
       }
 
+      .ai-poster-ring-shell {
+        --poster-card-width: clamp(210px, 62vw, 250px);
+        --poster-ring-radius: 600px;
+        position: relative;
+        height: 430px;
+        overflow: hidden;
+        isolation: isolate;
+        perspective: 1320px;
+        perspective-origin: 50% 48%;
+        touch-action: pan-y pinch-zoom;
+        overscroll-behavior-x: contain;
+      }
+
+      .ai-poster-ring-shell::before {
+        position: absolute;
+        left: 50%;
+        bottom: 3.5%;
+        width: min(72vw, 680px);
+        height: 56px;
+        border: 1px solid rgba(255, 255, 255, .055);
+        border-radius: 50%;
+        background: radial-gradient(ellipse at center, rgba(192, 132, 252, .12), rgba(56, 189, 248, .035) 42%, transparent 72%);
+        box-shadow: 0 0 70px rgba(124, 58, 237, .1);
+        content: '';
+        pointer-events: none;
+        transform: translateX(-50%) rotateX(72deg);
+      }
+
+      .ai-poster-ring {
+        position: absolute;
+        inset: 0;
+        transform: translateZ(calc(0px - var(--poster-ring-radius))) rotateY(var(--poster-ring-rotation, 0deg));
+        transform-style: preserve-3d;
+        transition: transform .95s cubic-bezier(.16, 1, .3, 1);
+        will-change: transform;
+      }
+
+      .ai-poster-ring-card {
+        position: absolute;
+        left: 50%;
+        top: 49%;
+        width: 0;
+        height: 0;
+        transform: rotateY(var(--poster-angle, 0deg)) translateZ(var(--poster-ring-radius));
+        transform-style: preserve-3d;
+        transition: opacity .75s ease, filter .75s ease;
+      }
+
+      .ai-poster-ring-card__surface {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: var(--poster-card-width);
+        aspect-ratio: 25 / 32;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        transform: translate(-50%, -50%) translateZ(0) scale(.985);
+        transform-style: preserve-3d;
+        transition: transform .75s cubic-bezier(.16, 1, .3, 1), box-shadow .75s ease;
+      }
+
+      .ai-poster-ring-card.is-active .ai-poster-ring-card__surface {
+        transform: translate(-50%, -50%) translateZ(12px) scale(1.035);
+        box-shadow: 0 34px 85px rgba(0, 0, 0, .46);
+      }
+
+      @media (min-width: 768px) {
+        .ai-poster-ring-shell {
+          --poster-card-width: clamp(250px, 23vw, 300px);
+          --poster-ring-radius: clamp(720px, 58vw, 900px);
+          height: clamp(500px, 45vw, 590px);
+          perspective: clamp(1600px, 125vw, 2100px);
+        }
+      }
+
       @media (prefers-reduced-motion: reduce) {
         .motion-apple-controls,
         .motion-apple-controls.is-visible {
@@ -475,6 +702,12 @@
         }
 
         .motion-control-marker {
+          transition: none;
+        }
+
+        .ai-poster-ring,
+        .ai-poster-ring-card,
+        .ai-poster-ring-card__surface {
           transition: none;
         }
       }
@@ -809,58 +1042,618 @@
           z-index: 3;
         }
 
-        .hero-nameplate {
-          position: absolute;
-          top: clamp(7rem, 13vh, 9rem);
-          left: clamp(1.5rem, 4vw, 4rem);
-          z-index: 12;
-          width: auto;
-          margin: 0;
-          text-align: left;
+        .premium-nav-shell {
+          top: clamp(0.875rem, 2vw, 1.5rem);
+          padding-inline: clamp(1rem, 2vw, 1.5rem);
           pointer-events: none;
         }
 
-        .hero-nameplate__meta {
+        .premium-nav {
+          min-height: 60px;
+          pointer-events: auto;
+          background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 34%),
+            rgba(5, 5, 5, 0.68);
+          border: 1px solid rgba(157, 104, 255, 0.3);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.055),
+            0 18px 52px rgba(0, 0, 0, 0.46);
+          opacity: 0;
+          transform: translate3d(0, -18px, 0) scale(0.985);
+          transition:
+            opacity 0.72s 0.08s cubic-bezier(0.16, 1, 0.3, 1),
+            transform 0.82s 0.08s cubic-bezier(0.16, 1, 0.3, 1),
+            border-color 0.28s ease,
+            box-shadow 0.28s ease;
+          will-change: opacity, transform;
+        }
+
+        .premium-nav.is-ready {
+          opacity: 1;
+          transform: translate3d(0, 0, 0) scale(1);
+          will-change: auto;
+        }
+
+        .premium-nav__brand {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.55rem;
+          color: #f5f5f2;
+          transition: color 0.28s ease;
+        }
+
+        .premium-nav__brand-mark {
+          display: inline-flex;
+          width: 2rem;
+          min-width: 2rem;
+          height: 2rem;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          border: 1px solid rgba(204, 255, 0, 0.44);
+          border-radius: 50%;
+          background: #070708;
+          box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.1), 0 0 18px rgba(192, 132, 252, 0.22);
+          transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+        }
+
+        .premium-nav__brand-avatar {
+          display: block;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center;
+          transform: scale(1.04);
+          transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease;
+        }
+
+        .premium-nav__brand:hover .premium-nav__brand-mark {
+          transform: scale(1.08);
+          border-color: rgba(204, 255, 0, 0.86);
+          box-shadow: 0 0 0 2px rgba(204, 255, 0, 0.12), 0 0 24px rgba(204, 255, 0, 0.3);
+        }
+
+        .premium-nav__brand:hover .premium-nav__brand-avatar {
+          transform: scale(1.12);
+          filter: saturate(1.08) contrast(1.04);
+        }
+
+        .premium-nav__sound {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .premium-nav__sound:hover {
+          transform: scale(1.05);
+          box-shadow: 0 0 24px rgba(204, 255, 0, 0.17);
+        }
+
+        .premium-hero {
+          position: relative;
+          isolation: isolate;
+          min-height: calc(100vh - 78px);
+          min-height: max(700px, calc(100svh - 78px));
+          overflow: hidden;
+          background: #050505;
+        }
+
+        .premium-hero__inner {
+          position: relative;
+          z-index: 10;
+          display: flex;
+          min-height: inherit;
+          width: min(100%, 1600px);
+          margin: 0 auto;
+          align-items: center;
+          padding:
+            clamp(8.5rem, 15vh, 11rem)
+            clamp(1.5rem, 6vw, 6rem)
+            clamp(4.5rem, 8vh, 6.5rem);
+        }
+
+        .premium-hero__content {
+          width: min(760px, 62vw);
+        }
+
+        .premium-hero__eyebrow {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          margin: 0 0 0.55rem 0.12rem;
-          color: rgba(255, 255, 255, 0.62);
-          font-family: 'Inter', sans-serif;
-          font-size: clamp(0.5rem, 0.65vw, 0.62rem);
-          font-weight: 600;
-          letter-spacing: 0.22em;
-          text-transform: uppercase;
-        }
-
-        .hero-nameplate__meta::before {
-          content: '';
-          width: clamp(1.35rem, 2.5vw, 2.5rem);
-          height: 1px;
-          flex: none;
-          background: #CCFF00;
-          box-shadow: 0 0 10px rgba(204, 255, 0, 0.35);
-        }
-
-        .hero-nameplate__title {
-          display: flex;
-          align-items: flex-end;
-          justify-content: flex-start;
-          margin: 0;
-          font-family: 'Inter', sans-serif;
-          font-size: clamp(2.35rem, 4.6vw, 4.7rem);
-          font-weight: 900;
-          line-height: 0.78;
-          letter-spacing: -0.07em;
+          gap: 0.85rem;
+          width: fit-content;
+          color: rgba(255, 255, 255, 0.58);
+          font: 700 clamp(0.5rem, 0.62vw, 0.64rem)/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+          letter-spacing: 0.2em;
           text-transform: uppercase;
           white-space: nowrap;
         }
 
-        .hero-nameplate__fold {
+        .premium-hero__eyebrow::before {
+          content: '';
+          width: clamp(1.7rem, 3vw, 2.8rem);
+          height: 1px;
+          flex: none;
+          background: #CCFF00;
+          box-shadow: 0 0 14px rgba(204, 255, 0, 0.32);
+        }
+
+        .premium-hero__title {
+          margin: clamp(1.45rem, 2.6vh, 2rem) 0 0;
+          color: #f5f5f2;
+          font-family: 'Inter', sans-serif;
+          font-size: clamp(5.5rem, 11.2vw, 11rem);
+          font-weight: 900;
+          line-height: 0.735;
+          letter-spacing: -0.078em;
+          text-transform: uppercase;
+        }
+
+        .premium-hero__title-mask {
+          display: block;
+          overflow: hidden;
+          padding: 0.08em 0.08em 0.09em 0;
+          margin: -0.08em 0 -0.08em;
+        }
+
+        .premium-hero__title-line {
+          display: block;
+          width: fit-content;
+          padding-right: 0.06em;
+        }
+
+        .premium-hero__title-line--lin {
+          color: #f5f5f2;
+          text-shadow: 0 12px 42px rgba(0, 0, 0, 0.38);
+        }
+
+        .premium-hero__title-line--yang {
           color: #CCFF00;
           text-shadow:
-            0 0 22px rgba(204, 255, 0, 0.2),
-            0 1px 0 rgba(255, 255, 255, 0.18);
+            0 0 34px rgba(204, 255, 0, 0.13),
+            0 12px 42px rgba(0, 0, 0, 0.42);
+        }
+
+        .premium-hero__tagline {
+          max-width: 34ch;
+          margin-top: clamp(1.7rem, 3.5vh, 2.6rem);
+          color: rgba(255, 255, 255, 0.56);
+          font-size: clamp(1rem, 1.35vw, 1.32rem);
+          font-weight: 400;
+          line-height: 1.48;
+          letter-spacing: -0.02em;
+          text-wrap: balance;
+        }
+
+        .premium-hero__latest {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.65rem;
+          width: fit-content;
+          margin-top: clamp(1.7rem, 3.3vh, 2.35rem);
+          padding: 0.58rem 0.88rem;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.045);
+          color: rgba(255, 255, 255, 0.76);
+          font: 600 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+        }
+
+        .premium-hero__latest-mark {
+          color: #CCFF00;
+          filter: drop-shadow(0 0 8px rgba(204, 255, 0, 0.42));
+        }
+
+        .premium-hero__actions {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-top: 1rem;
+        }
+
+        .premium-button {
+          display: inline-flex;
+          min-height: 56px;
+          align-items: center;
+          justify-content: center;
+          gap: 0.72rem;
+          border: 1px solid rgba(204, 255, 0, 0.78);
+          border-radius: 999px;
+          background: #CCFF00;
+          color: #050505;
+          padding: 0 2rem;
+          font-size: 0.75rem;
+          font-weight: 900;
+          letter-spacing: 0.11em;
+          text-transform: uppercase;
+          box-shadow:
+            0 0 0 rgba(204, 255, 0, 0),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+          transition:
+            transform 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+            box-shadow 0.34s ease,
+            background-color 0.34s ease;
+          will-change: transform;
+        }
+
+        .premium-button:hover {
+          transform: translate3d(0, -2px, 0) scale(1.05);
+          background: #d7ff33;
+          box-shadow:
+            0 0 38px rgba(204, 255, 0, 0.34),
+            0 14px 38px rgba(0, 0, 0, 0.32),
+            inset 0 1px 0 rgba(255, 255, 255, 0.58);
+        }
+
+        .premium-button:active {
+          transform: translate3d(0, 0, 0) scale(0.985);
+        }
+
+        .premium-button:focus-visible {
+          outline: 2px solid #fff;
+          outline-offset: 4px;
+        }
+
+        .premium-button--nav {
+          min-height: 34px;
+          padding-inline: 1.1rem;
+          font-size: 0.66rem;
+          letter-spacing: 0.08em;
+          box-shadow: 0 0 18px rgba(204, 255, 0, 0.2);
+        }
+
+        .hero-lightfield {
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          overflow: hidden;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 78% 38%, rgba(83, 47, 139, 0.2), transparent 42%),
+            #050505;
+          opacity: 0;
+          transform: scale(1.035);
+          transition:
+            opacity 1.6s 0.02s ease,
+            transform 2.2s 0.02s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .gradient-waves-container {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          background:
+            radial-gradient(circle at 72% 52%, rgba(82, 39, 255, 0.2), transparent 34%),
+            #050505;
+        }
+
+        .gradient-waves-container canvas {
+          width: 100%;
+          height: 100%;
+          display: block;
+          opacity: 0.96;
+          filter: saturate(0.92) contrast(1.06);
+        }
+
+        .hero-lightfield.is-ready {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .hero-lightfield > canvas {
+          z-index: 0;
+          opacity: 0.82;
+          filter: saturate(0.82) contrast(1.08) brightness(0.76);
+          transform: scale(1.07) translate3d(5%, 0, 0);
+          transform-origin: 70% 45%;
+        }
+
+        .hero-lightfield__halo,
+        .hero-lightfield__refract,
+        .hero-lightfield__glass,
+        .hero-lightfield__veil,
+        .hero-lightfield__grain {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+        }
+
+        .hero-lightfield__halo {
+          z-index: 1;
+          background:
+            radial-gradient(circle at 84% 34%, rgba(34, 199, 216, 0.16), transparent 22%),
+            radial-gradient(circle at 74% 64%, rgba(111, 60, 255, 0.18), transparent 30%),
+            radial-gradient(circle at 91% 72%, rgba(204, 255, 0, 0.055), transparent 20%);
+          mix-blend-mode: screen;
+        }
+
+        .hero-lightfield__refract {
+          --refract-start: -19deg;
+          --refract-end: -16deg;
+          z-index: 2;
+          inset: auto -15vw 14% auto;
+          width: min(86vw, 1380px);
+          height: clamp(110px, 16vw, 260px);
+          border-radius: 50%;
+          background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(113, 61, 255, 0.02) 12%,
+            rgba(255, 255, 255, 0.28) 40%,
+            rgba(34, 199, 216, 0.2) 58%,
+            rgba(184, 62, 156, 0.16) 74%,
+            transparent 100%
+          );
+          filter: blur(24px);
+          mix-blend-mode: screen;
+          opacity: 0.42;
+          transform: rotate(var(--refract-start)) translate3d(0, 0, 0);
+          animation: premiumRefractDrift 15s ease-in-out infinite alternate;
+          will-change: transform;
+        }
+
+        .hero-lightfield__refract--secondary {
+          --refract-start: 24deg;
+          --refract-end: 20deg;
+          inset: 7% -31vw auto auto;
+          width: min(76vw, 1160px);
+          height: clamp(90px, 12vw, 190px);
+          opacity: 0.27;
+          transform: rotate(24deg) translate3d(0, 0, 0);
+          animation-duration: 19s;
+          animation-direction: alternate-reverse;
+        }
+
+        .hero-lightfield__glass {
+          z-index: 3;
+          background: conic-gradient(
+            from 214deg at 78% 45%,
+            transparent 0deg,
+            rgba(255, 255, 255, 0.08) 16deg,
+            rgba(111, 60, 255, 0.06) 29deg,
+            transparent 52deg,
+            transparent 360deg
+          );
+          -webkit-mask-image: radial-gradient(circle at 78% 45%, #000 0 34%, transparent 72%);
+          mask-image: radial-gradient(circle at 78% 45%, #000 0 34%, transparent 72%);
+          opacity: 0.72;
+        }
+
+        .hero-lightfield__veil {
+          z-index: 4;
+          background:
+            linear-gradient(90deg, #050505 0%, rgba(5, 5, 5, 0.96) 24%, rgba(5, 5, 5, 0.76) 43%, rgba(5, 5, 5, 0.2) 69%, rgba(5, 5, 5, 0.48) 100%),
+            linear-gradient(180deg, rgba(5, 5, 5, 0.42) 0%, transparent 24%, transparent 70%, #050505 100%),
+            radial-gradient(ellipse at center, transparent 42%, rgba(5, 5, 5, 0.7) 100%);
+        }
+
+        .hero-lightfield__grain {
+          z-index: 5;
+          opacity: 0.11;
+          background-image:
+            radial-gradient(circle, rgba(255, 255, 255, 0.42) 0 0.45px, transparent 0.65px),
+            radial-gradient(circle, rgba(255, 255, 255, 0.24) 0 0.4px, transparent 0.62px);
+          background-position: 0 0, 2px 3px;
+          background-size: 4px 4px, 7px 7px;
+          mix-blend-mode: soft-light;
+        }
+
+        .premium-hero__reveal {
+          opacity: 0;
+          filter: blur(8px);
+          transform: translate3d(0, 30px, 0);
+          will-change: transform, opacity, filter;
+        }
+
+        .premium-hero.is-ready .premium-hero__reveal {
+          animation: premiumHeroReveal 1.05s var(--hero-delay, 0s) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .premium-marquee {
+          position: relative;
+          z-index: 10;
+          display: flex;
+          height: 78px;
+          align-items: center;
+          overflow: hidden;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
+          border-bottom: 1px solid rgba(125, 80, 192, 0.16);
+          background: #050505;
+        }
+
+        .premium-marquee::before,
+        .premium-marquee::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          z-index: 2;
+          width: min(12vw, 150px);
+          pointer-events: none;
+        }
+
+        .premium-marquee::before {
+          left: 0;
+          background: linear-gradient(90deg, #050505, transparent);
+        }
+
+        .premium-marquee::after {
+          right: 0;
+          background: linear-gradient(-90deg, #050505, transparent);
+        }
+
+        .premium-marquee__track {
+          display: flex;
+          width: max-content;
+          flex: none;
+          animation: premiumMarquee 30s linear infinite;
+          will-change: transform;
+        }
+
+        .premium-marquee__group {
+          display: flex;
+          flex: none;
+          align-items: center;
+          white-space: nowrap;
+        }
+
+        .premium-marquee__item {
+          color: rgba(255, 255, 255, 0.27);
+          font-size: clamp(1.25rem, 2.55vw, 2.6rem);
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: -0.055em;
+          text-transform: uppercase;
+        }
+
+        .premium-marquee__item--accent {
+          color: rgba(204, 255, 0, 0.48);
+        }
+
+        .premium-marquee__divider {
+          margin-inline: clamp(1.15rem, 2.1vw, 2.3rem);
+          color: rgba(255, 255, 255, 0.1);
+          font: 800 clamp(1rem, 1.8vw, 1.8rem)/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+
+        @keyframes premiumHeroReveal {
+          0% { opacity: 0; filter: blur(8px); transform: translate3d(0, 30px, 0); }
+          100% { opacity: 1; filter: blur(0); transform: translate3d(0, 0, 0); }
+        }
+
+        @keyframes premiumRefractDrift {
+          0% { transform: rotate(var(--refract-start)) translate3d(-2.5%, 1.5%, 0) scaleX(0.96); }
+          100% { transform: rotate(var(--refract-end)) translate3d(3%, -1.5%, 0) scaleX(1.04); }
+        }
+
+        @keyframes premiumMarquee {
+          from { transform: translate3d(0, 0, 0); }
+          to { transform: translate3d(-50%, 0, 0); }
+        }
+
+        @media (max-width: 767px) {
+          .premium-nav-shell {
+            top: 0.875rem;
+            padding-inline: 0.875rem;
+          }
+
+          .premium-nav {
+            min-height: 54px;
+            padding: 0.5rem 0.65rem;
+          }
+
+          .premium-nav__brand {
+            gap: 0.42rem;
+          }
+
+          .premium-nav__brand-mark {
+            width: 1.75rem;
+            min-width: 1.75rem;
+            height: 1.75rem;
+          }
+
+          .premium-hero {
+            min-height: calc(100vh - 68px);
+            min-height: max(640px, calc(100svh - 68px));
+          }
+
+          .premium-hero__inner {
+            align-items: center;
+            padding: 7rem 1.35rem 3.5rem;
+          }
+
+          .premium-hero__content {
+            width: 100%;
+          }
+
+          .premium-hero__eyebrow {
+            gap: 0.58rem;
+            font-size: 0.47rem;
+            letter-spacing: 0.135em;
+          }
+
+          .premium-hero__title {
+            margin-top: 1.25rem;
+            font-size: clamp(3.8rem, 19vw, 6.2rem);
+            line-height: 0.76;
+          }
+
+          .premium-hero__tagline {
+            max-width: 29ch;
+            margin-top: 1.55rem;
+            font-size: 0.98rem;
+          }
+
+          .premium-hero__latest {
+            margin-top: 1.55rem;
+            font-size: 0.56rem;
+            letter-spacing: 0.12em;
+          }
+
+          .premium-button {
+            min-height: 52px;
+            padding-inline: 1.55rem;
+            font-size: 0.69rem;
+          }
+
+          .premium-button--nav {
+            min-height: 34px;
+            padding-inline: 0.9rem;
+            font-size: 0.62rem;
+          }
+
+          .hero-lightfield > canvas {
+            opacity: 0.64;
+            transform: scale(1.12) translate3d(13%, 0, 0);
+          }
+
+          .hero-lightfield__veil {
+            background:
+              linear-gradient(90deg, rgba(5, 5, 5, 0.93) 0%, rgba(5, 5, 5, 0.78) 52%, rgba(5, 5, 5, 0.4) 100%),
+              linear-gradient(180deg, rgba(5, 5, 5, 0.46) 0%, transparent 28%, transparent 68%, #050505 100%),
+              radial-gradient(ellipse at center, transparent 35%, rgba(5, 5, 5, 0.72) 100%);
+          }
+
+          .hero-lightfield__refract {
+            right: -45vw;
+            width: 125vw;
+            opacity: 0.28;
+          }
+
+          .hero-lightfield__refract--secondary {
+            right: -62vw;
+            opacity: 0.18;
+          }
+
+          .premium-marquee {
+            height: 68px;
+          }
+
+          .premium-marquee__track {
+            animation-duration: 34s;
+          }
+
+          .premium-marquee__item {
+            font-size: clamp(1.2rem, 6.4vw, 1.75rem);
+          }
+        }
+
+        @media (max-width: 410px) {
+          .premium-nav__wordmark {
+            display: none;
+          }
+
+          .premium-button--nav {
+            padding-inline: 0.78rem;
+          }
+
+          .premium-hero__inner {
+            padding-inline: 1.1rem;
+          }
         }
 
         .fold-text {
@@ -945,23 +1738,6 @@
           100% { opacity: 0; }
         }
 
-        @media (max-width: 640px) {
-          .hero-nameplate {
-            top: 6.9rem;
-            left: 1.5rem;
-            width: calc(100% - 3rem);
-          }
-
-          .hero-nameplate__meta {
-            justify-content: flex-start;
-            letter-spacing: 0.13em;
-          }
-
-          .hero-nameplate__title {
-            font-size: clamp(2rem, 11vw, 3.15rem);
-          }
-        }
-
         @keyframes textTypeCursorBlink {
           from { opacity: 1; }
           to { opacity: 0.12; }
@@ -969,6 +1745,36 @@
 
         @media (prefers-reduced-motion: reduce) {
           .text-type__cursor { animation: none; }
+
+          .premium-nav,
+          .premium-nav.is-ready,
+          .hero-lightfield,
+          .hero-lightfield.is-ready {
+            opacity: 1;
+            transform: none;
+            transition: none;
+          }
+
+          .premium-hero__reveal,
+          .premium-hero.is-ready .premium-hero__reveal {
+            opacity: 1;
+            filter: none;
+            transform: none;
+            animation: none;
+          }
+
+          .hero-lightfield__refract,
+          .premium-marquee__track {
+            animation: none;
+            transform: none;
+          }
+
+          .premium-button,
+          .premium-button:hover,
+          .premium-button:active {
+            transform: none;
+            transition: none;
+          }
 
           .specular-nav::before,
           .specular-nav::after {
@@ -1189,6 +1995,21 @@
       const canvasRef = useRef(null);
 
       const defaultItems = useMemo(() => [
+        { image: './assets/circular-posters/poster-endless-road.webp' },
+        { image: './assets/circular-posters/poster-she-woke.webp' },
+        { image: './assets/circular-posters/poster-escape-monday.webp' },
+        { image: './assets/circular-posters/poster-last-seen-midnight.webp' },
+        { image: './assets/circular-posters/poster-youth-in-wild.webp' },
+        { image: './assets/circular-posters/poster-out-of-focus.webp' },
+        { image: './assets/circular-posters/poster-travelers-in-wind.webp' },
+        { image: './assets/circular-selected/portfolio-frame-14.jpg' },
+        { image: './assets/circular-posters/poster-wind-passed-by.webp' },
+        { image: './assets/circular-posters/poster-wind-off-duty.webp' },
+        { image: './assets/circular-posters/poster-nothing-happened.webp' },
+        { image: './assets/circular-posters/poster-lost-on-moon.webp' },
+        { image: './assets/circular-posters/poster-fireworks-youth.webp' },
+        { image: './assets/circular-posters/poster-summer-escape.webp' },
+        { image: './assets/circular-posters/poster-message-yesterday.webp' },
         { image: './assets/circular-selected/portfolio-frame-01.jpg' },
         { image: './assets/circular-selected/portfolio-frame-02.jpg' },
         { image: './assets/circular-selected/portfolio-frame-03.jpg' },
@@ -1197,12 +2018,10 @@
         { image: './assets/circular-selected/portfolio-frame-06.jpg' },
         { image: './assets/circular-selected/portfolio-frame-07.jpg' },
         { image: './assets/circular-selected/portfolio-frame-08.jpg' },
-        { image: './assets/circular-selected/portfolio-frame-09.jpg' },
         { image: './assets/circular-selected/portfolio-frame-10.jpg' },
         { image: './assets/circular-selected/portfolio-frame-11.jpg' },
         { image: './assets/circular-selected/portfolio-frame-12.jpg' },
         { image: './assets/circular-selected/portfolio-frame-13.jpg' },
-        { image: './assets/circular-selected/portfolio-frame-14.jpg' },
         { image: './assets/circular-selected/portfolio-frame-15.jpg' },
       ], []);
 
@@ -1251,6 +2070,7 @@
           galleryItems.forEach((item, index) => {
             const img = new Image();
             img.decoding = 'async';
+            img.fetchPriority = 'low';
             img.onload = () => {
               if (disposed || !isCanvasVisible || document.hidden) return;
               cancelAnimationFrame(animationFrameId);
@@ -1304,28 +2124,7 @@
           ctx.rotate(angle * 0.15);
 
           const radius = Math.min(width, height) * radiusRatio;
-
-          // React Bits BorderGlow-style layered outer light.
-          const edgeGradient = ctx.createLinearGradient(-width / 2, -height / 2, width / 2, height / 2);
-          edgeGradient.addColorStop(0, '#c084fc');
-          edgeGradient.addColorStop(0.33, '#f472b6');
-          edgeGradient.addColorStop(0.66, '#38bdf8');
-          edgeGradient.addColorStop(1, '#c084fc');
-
-          ctx.save();
-          ctx.beginPath();
-          ctx.roundRect(-width / 2, -height / 2, width, height, radius);
-          ctx.strokeStyle = edgeGradient;
-          ctx.lineWidth = 4;
-          ctx.globalAlpha = (0.22 + scale * 0.22) * cardOpacity;
-          ctx.shadowColor = 'rgba(125, 211, 252, 0.72)';
-          ctx.shadowBlur = 34 * scale;
-          ctx.stroke();
-          ctx.shadowColor = 'rgba(192, 132, 252, 0.58)';
-          ctx.shadowBlur = 18 * scale;
-          ctx.stroke();
-          ctx.restore();
-
+          
           ctx.beginPath();
           ctx.roundRect(-width / 2, -height / 2, width, height, radius);
           ctx.fillStyle = '#0f0919';
@@ -1366,18 +2165,12 @@
           }
           ctx.restore();
 
-          ctx.strokeStyle = edgeGradient;
-          ctx.lineWidth = 2.25;
-          ctx.globalAlpha = 0.9 * cardOpacity;
-          ctx.stroke();
-
-          ctx.save();
           ctx.beginPath();
-          ctx.roundRect(-width / 2 + 4, -height / 2 + 4, width - 8, height - 8, Math.max(0, radius - 3));
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.17)';
-          ctx.lineWidth = 1;
+          ctx.roundRect(-width / 2, -height / 2, width, height, radius);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+          ctx.lineWidth = 0.9;
+          ctx.globalAlpha = cardOpacity;
           ctx.stroke();
-          ctx.restore();
 
           ctx.restore();
         };
@@ -1665,14 +2458,14 @@
             float q = dot(c, vec3(0.211, -0.523, 0.312));
             return vec3(y, i, q);
           }
-
+          
           vec3 yiq2rgb(vec3 c) {
             float r = c.x + 0.956 * c.y + 0.621 * c.z;
             float g = c.x - 0.272 * c.y - 0.647 * c.z;
             float b = c.x - 1.106 * c.y + 1.703 * c.z;
             return vec3(r, g, b);
           }
-
+          
           vec3 adjustHue(vec3 color, float hueDeg) {
             float hueRad = hueDeg * 3.14159265 / 180.0;
             vec3 yiq = rgb2yiq(color);
@@ -1729,13 +2522,13 @@
             vec3 color1 = adjustHue(baseColor1, hue);
             vec3 color2 = adjustHue(baseColor2, hue);
             vec3 color3 = adjustHue(baseColor3, hue);
-
+            
             float ang = atan(uv.y, uv.x);
             float len = length(uv);
             float invLen = len > 0.0 ? 1.0 / len : 0.0;
 
             float bgLuminance = dot(backgroundColor, vec3(0.299, 0.587, 0.114));
-
+            
             float n0 = snoise3(vec3(uv * noiseScale, iTime * 0.5)) * 0.5 + 0.5;
             float r0 = mix(mix(innerRadius, 1.0, 0.4), mix(innerRadius, 1.0, 0.6), n0);
             float d0 = distance(uv, (r0 * invLen) * uv);
@@ -1745,27 +2538,27 @@
             float innerFade = smoothstep(r0 * 0.8, r0 * 0.95, len);
             v0 *= mix(innerFade, 1.0, bgLuminance * 0.7);
             float cl = cos(ang + iTime * 2.0) * 0.5 + 0.5;
-
+            
             float a = iTime * -1.0;
             vec2 pos = vec2(cos(a), sin(a)) * r0;
             float d = distance(uv, pos);
             float v1 = light2(1.5, 5.0, d);
             v1 *= light1(1.0, 50.0, d0);
-
+            
             float v2 = smoothstep(1.0, mix(innerRadius, 1.0, n0 * 0.5), len);
             float v3 = smoothstep(innerRadius, mix(innerRadius, 1.0, 0.5), len);
-
+            
             vec3 colBase = mix(color1, color2, cl);
             float fadeAmount = mix(1.0, 0.1, bgLuminance);
-
+            
             vec3 darkCol = mix(color3, colBase, v0);
             darkCol = (darkCol + v1) * v2 * v3;
             darkCol = clamp(darkCol, 0.0, 1.0);
-
+            
             vec3 lightCol = (colBase + v1) * mix(1.0, v2 * v3, fadeAmount);
             lightCol = mix(backgroundColor, lightCol, v0);
             lightCol = clamp(lightCol, 0.0, 1.0);
-
+            
             vec3 finalCol = mix(darkCol, lightCol, bgLuminance);
             return extractAlpha(finalCol);
           }
@@ -1775,12 +2568,12 @@
             vec2 center = iResolution.xy * 0.5;
             float size = min(iResolution.x, iResolution.y);
             vec2 uv = (fragCoord - center) / size * 2.0;
-
+            
             float angle = rot;
             float s = sin(angle);
             float c = cos(angle);
             uv = vec2(c * uv.x - s * uv.y, s * uv.x + s * 0.0 + c * uv.y);
-
+            
             vec4 col = draw(uv);
             gl_FragColor = vec4(col.rgb * col.a, col.a);
           }
@@ -1864,7 +2657,7 @@
           lastFrame = now;
           resize();
           const dt = (now - startTime) * 0.001;
-
+          
           gl.clearColor(0, 0, 0, 0);
           gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -1883,7 +2676,7 @@
           gl.uniform1f(uHueLoc, hue);
           gl.uniform1f(uHoverLoc, forceHoverState ? 1 : currentHover);
           gl.uniform1f(uHoverIntensityLoc, hoverIntensity);
-
+          
           if (rotateOnHover) {
             currentRot += 0.005;
           }
@@ -2345,7 +3138,7 @@
       const isHorizontal = orientation === 'horizontal';
 
       return (
-        <div
+        <div 
           className={`w-full overflow-hidden flex ${isHorizontal ? 'flex-row' : 'flex-col'} ${className}`}
           style={{
             height: typeof height === 'number' ? `${height}px` : height,
@@ -2355,7 +3148,7 @@
           {items.map((item, index) => {
             const isActive = activeIndex === index;
             const pos = mousePos[index] || { x: 0, y: 0 };
-
+            
             const tiltX = isActive ? -pos.y * tilt : 0;
             const tiltY = isActive ? pos.x * tilt : 0;
 
@@ -2460,8 +3253,27 @@
       );
     };
 
-    const Navbar = ({ audioMuted, setAudioMuted, triggerToast }) => {
+    const Button = ({ href, onClick, children, className = '', size = 'hero', ariaLabel }) => (
+      <a
+        href={href}
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className={`premium-button ${size === 'nav' ? 'premium-button--nav' : ''} ${className}`.trim()}
+      >
+        {children}
+      </a>
+    );
+
+    const Navbar = ({ audioMuted, setAudioMuted, triggerToast, introComplete }) => {
       const navRef = useRef(null);
+      const navItems = [
+        { id: 'circular', label: 'WORKS', secondary: '作品案例' },
+        { id: 'projects', label: 'SHOWREEL', secondary: '精选影片' },
+        { id: 'motion', label: 'MOTION DESIGN', secondary: '动态设计' },
+        { id: 'gallery', label: 'AIGC CINEMA', secondary: 'AIGC影像' },
+        { id: 'visual-journal', label: 'VISUAL JOURNAL', secondary: '视觉日志' },
+        { id: 'profile', label: 'ABOUT', secondary: '关于我' },
+      ];
 
       useEffect(() => {
         const nav = navRef.current;
@@ -2513,55 +3325,65 @@
       }, []);
 
       return (
-        <nav className="fixed top-6 left-0 right-0 z-50 px-6 flex justify-center">
-          <div ref={navRef} className="specular-nav bg-black/70 backdrop-blur-2xl border border-purple-500/30 px-5 lg:px-6 py-2.5 rounded-full flex items-center justify-between max-w-[1280px] w-full shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-            <div className="flex items-center gap-2 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="px-2 py-0.5 rounded-full bg-gradient-to-tr from-purple-600 to-[#CCFF00] flex items-center justify-center text-black font-black text-xs group-hover:scale-110 transition-transform tracking-tighter">LIN</div>
-              <span className="font-bold tracking-wider text-sm uppercase">LIN</span>
-            </div>
+        <nav className="premium-nav-shell fixed left-0 right-0 z-50 flex justify-center" aria-label="主导航">
+          <div ref={navRef} className={`specular-nav premium-nav ${introComplete ? 'is-ready' : ''} flex w-full max-w-[1440px] items-center justify-between rounded-full px-4 py-2 backdrop-blur-2xl lg:px-6`}>
+            <button
+              type="button"
+              className="premium-nav__brand cursor-pointer"
+              aria-label="返回首页顶部"
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            >
+              <span className="premium-nav__brand-mark" aria-hidden="true">
+                <img
+                  src="./assets/profile/nav-avatar.webp"
+                  alt=""
+                  width="192"
+                  height="192"
+                  loading="eager"
+                  decoding="async"
+                  className="premium-nav__brand-avatar"
+                />
+              </span>
+              <span className="premium-nav__wordmark text-sm font-bold uppercase tracking-[0.16em]">LIN</span>
+            </button>
 
-            <div className="hidden lg:flex items-center gap-4 xl:gap-6 font-mono text-gray-300 uppercase">
-              <a href="#circular" onClick={(e) => scrollToSection(e, 'circular')} className="group/nav flex flex-col items-center leading-none transition-colors hover:text-[#CCFF00]">
-                <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.14em]">WORKS</span>
-                <span className="mt-1 text-[8px] tracking-[0.12em] text-white/45 transition-colors group-hover/nav:text-[#CCFF00]/70">作品案例</span>
-              </a>
-              <a href="#projects" onClick={(e) => scrollToSection(e, 'projects')} className="group/nav flex flex-col items-center leading-none transition-colors hover:text-[#CCFF00]">
-                <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.14em]">SHOWREEL</span>
-                <span className="mt-1 text-[8px] tracking-[0.12em] text-white/45 transition-colors group-hover/nav:text-[#CCFF00]/70">精选影片</span>
-              </a>
-              <a href="#motion" onClick={(e) => scrollToSection(e, 'motion')} className="group/nav flex flex-col items-center leading-none transition-colors hover:text-[#CCFF00]">
-                <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.14em]">MOTION DESIGN</span>
-                <span className="mt-1 text-[8px] tracking-[0.12em] text-white/45 transition-colors group-hover/nav:text-[#CCFF00]/70">动态设计</span>
-              </a>
-              <a href="#gallery" onClick={(e) => scrollToSection(e, 'gallery')} className="group/nav flex flex-col items-center leading-none transition-colors hover:text-[#CCFF00]">
-                <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.14em]">AIGC CINEMA</span>
-                <span className="mt-1 text-[8px] tracking-[0.12em] text-white/45 transition-colors group-hover/nav:text-[#CCFF00]/70">AI影像</span>
-              </a>
-              <a href="#visual-journal" onClick={(e) => scrollToSection(e, 'visual-journal')} className="group/nav flex flex-col items-center leading-none transition-colors hover:text-[#CCFF00]">
-                <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.14em]">VISUAL JOURNAL</span>
-                <span className="mt-1 text-[8px] tracking-[0.12em] text-white/45 transition-colors group-hover/nav:text-[#CCFF00]/70">视觉日志</span>
-              </a>
-              <a href="#profile" onClick={(e) => scrollToSection(e, 'profile')} className="group/nav flex flex-col items-center leading-none transition-colors hover:text-[#CCFF00]">
-                <span className="text-[9px] xl:text-[10px] font-bold tracking-[0.14em]">ABOUT</span>
-                <span className="mt-1 text-[8px] tracking-[0.12em] text-white/45 transition-colors group-hover/nav:text-[#CCFF00]/70">关于我</span>
-              </a>
+            <div className="hidden items-center gap-3 font-mono uppercase text-gray-300 lg:flex xl:gap-6">
+              {navItems.map(item => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={event => scrollToSection(event, item.id)}
+                  className="group/nav flex flex-col items-center leading-none transition-colors duration-300 hover:text-[#CCFF00] focus:outline-none focus-visible:text-[#CCFF00]"
+                >
+                  <span className="text-[9px] font-bold tracking-[0.14em] xl:text-[10px]">{item.label}</span>
+                  <span className="mt-1 text-[8px] tracking-[0.12em] text-white/42 transition-colors group-hover/nav:text-[#CCFF00]/70">{item.secondary}</span>
+                </a>
+              ))}
             </div>
 
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => {
                   setAudioMuted(!audioMuted);
                   triggerToast(audioMuted ? "环境音效已开启" : "环境音效已静音");
                 }}
-                className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white hover:bg-[#CCFF00] hover:text-black transition-all"
+                aria-label={audioMuted ? '开启环境音效' : '关闭环境音效'}
+                aria-pressed={!audioMuted}
+                className="premium-nav__sound flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/[0.18] bg-white/[0.07] text-white hover:bg-[#CCFF00] hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 title="切换环境音频"
               >
                 {audioMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
               </button>
 
-              <a href="#contact" onClick={(e) => scrollToSection(e, 'contact')} className="bg-[#CCFF00] text-black px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider hover:bg-white transition-all shadow-[0_0_15px_rgba(204,255,0,0.4)]">
+              <Button
+                href="#contact"
+                onClick={event => scrollToSection(event, 'contact')}
+                size="nav"
+                ariaLabel="联系 LIN YANG"
+              >
                 联系我
-              </a>
+              </Button>
             </div>
           </div>
         </nav>
@@ -2813,134 +3635,554 @@
       );
     };
 
-    const HeroSection = ({ scrollY, triggerToast, introComplete }) => {
-      const scrollScale = Math.min(1.35, 1 + scrollY * 0.0008);
-      const opacityFade = Math.max(0.2, 1 - scrollY * 0.0015);
-      const [portfolioReady, setPortfolioReady] = useState(false);
-
-      useEffect(() => {
-        if (!introComplete) {
-          setPortfolioReady(false);
-          return;
-        }
-        const portfolioTimer = window.setTimeout(() => setPortfolioReady(true), 1650);
-        return () => clearTimeout(portfolioTimer);
-      }, [introComplete]);
-
-      return (
-        <section className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-16 md:pt-20 z-10 perspective-container overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <ColorBends
-              colors={['#ff5c7a', '#8a5cff', '#00ffd1']}
-              rotation={90}
-              speed={0.2}
-              scale={1}
-              frequency={1}
-              warpStrength={1}
-              mouseInfluence={1}
-              parallax={0.5}
-              noise={0.15}
-              iterations={1}
-              intensity={1.5}
-              bandWidth={6}
-              transparent
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#050308]/20 via-transparent to-[#050308]/85"></div>
-          </div>
-
-          <div className={`hero-nameplate opacity-0 ${introComplete ? 'animate-text-reveal' : ''}`} style={{ animationDelay: '0.08s' }}>
-            <div className="hero-nameplate__meta">Video Editor · Motion Designer · AIGC Creator</div>
-            <h1 className="hero-nameplate__title" aria-label="LIN YANG">
-              <FoldText text="LIN YANG" perspective={700} color="#CCFF00" className="hero-nameplate__fold" activationDelay={160} enabled={introComplete} />
-            </h1>
-          </div>
-
-          <div className="max-w-5xl mx-auto flex flex-col items-center relative z-10 w-full -mt-12 md:-mt-16">
-            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 mb-4 backdrop-blur-md opacity-0 ${introComplete ? 'animate-text-reveal' : ''}`} style={{ animationDelay: '0.32s' }}>
-              <Sparkles size={14} className="text-[#CCFF00]" />
-              <span className="text-xs font-mono tracking-widest uppercase text-gray-200">LATEST // 2026 VISUAL REEL</span>
-            </div>
-
-            <div className={`w-full transition-transform duration-100 ease-out opacity-0 py-4 ${portfolioReady ? 'animate-text-reveal' : ''}`} style={{ animationDelay: '0s', transform: `scale(${scrollScale})`, opacity: portfolioReady ? opacityFade : 0 }}>
-              <EchoText
-                text="PORTFOLIO"
-                echoes={12}
-                lag={0.24}
-                offset={36}
-                direction="right"
-                fade={0.72}
-                blur={3}
-                tint="#7dd3fc"
-                mode="both"
-                cursorRadius={320}
-                duration={900}
-                ease="ease-out"
-                fontSize="clamp(3rem, 9vw, 7rem)"
-                fontWeight={800}
-                color="#f8fafc"
-                className="echo-text--shiny portfolio-hover"
-                frontContent={
-                  <span className={`portfolio-fold-word ${portfolioReady ? 'is-active' : ''}`}>PORTFOLIO</span>
-                }
-              />
-            </div>
-
-            <div className={`mt-8 flex justify-center items-center w-full opacity-0 ${portfolioReady ? 'animate-text-reveal' : ''}`} style={{ animationDelay: '0.82s' }}>
-              <a
-                href="#circular"
-                onClick={(e) => scrollToSection(e, 'circular')}
-                className="bg-[#CCFF00] text-black font-black px-8 py-4 rounded-full text-sm uppercase tracking-widest hover:bg-white transition-all shadow-[0_0_30px_rgba(204,255,0,0.4)] flex items-center gap-2"
-              >
-                探索动态设计 <ArrowUpRight size={18} />
-              </a>
-            </div>
-          </div>
-        </section>
-      );
+    const gradientWavesHexToRgb = hex => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      if (!result) return [1, 1, 1];
+      return [
+        parseInt(result[1], 16) / 255,
+        parseInt(result[2], 16) / 255,
+        parseInt(result[3], 16) / 255,
+      ];
     };
 
-    const TextMarquee = ({ text }) => {
-      return (
-        <div className="py-5 md:py-6 border-y border-purple-500/20 bg-black/90 backdrop-blur-md overflow-hidden flex items-center relative z-10">
-          <div className="whitespace-nowrap flex animate-[marquee_25s_linear_infinite] w-[200%]">
-            <span className="text-[clamp(1.25rem,2.7vw,2.75rem)] font-black tracking-[-0.035em] text-white/30 uppercase mx-4">{text}</span>
-            <span className="text-[clamp(1.25rem,2.7vw,2.75rem)] font-black tracking-[-0.035em] text-[#CCFF00]/40 uppercase mx-4">{text}</span>
-            <span className="text-[clamp(1.25rem,2.7vw,2.75rem)] font-black tracking-[-0.035em] text-white/30 uppercase mx-4">{text}</span>
-            <span className="text-[clamp(1.25rem,2.7vw,2.75rem)] font-black tracking-[-0.035em] text-[#CCFF00]/40 uppercase mx-4">{text}</span>
+    const gradientWavesDetailToSteps = detail => {
+      if (detail === 'low') return 40;
+      if (detail === 'high') return 110;
+      return 70;
+    };
+
+    const gradientWavesVertex = `#version 300 es
+in vec2 position;
+void main() {
+  gl_Position = vec4(position, 0.0, 1.0);
+}`;
+
+    const gradientWavesFragment = `#version 300 es
+precision highp float;
+uniform vec2 iResolution;
+uniform float iTime;
+uniform float uSpeed;
+uniform float uAmplitude;
+uniform float uWaveScale;
+uniform float uWaveRatio;
+uniform float uSwell;
+uniform float uTurbulence;
+uniform float uTilt;
+uniform float uZoom;
+uniform float uHeight;
+uniform float uFogDepth;
+uniform float uSteps;
+uniform float uBrightness;
+uniform float uOpacity;
+uniform float uGrain;
+uniform float uGrainIntensity;
+uniform vec2 uMouse;
+uniform float uParallax;
+uniform bool uEnableMouse;
+uniform vec3 uHorizonColor;
+uniform vec3 uWaveColor;
+uniform vec3 uCrestColor;
+out vec4 fragColor;
+
+const float MAX_DIST = 20000.0;
+
+float hash21(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float plasma(vec3 r, vec2 freq, vec4 tc) {
+  float mx = r.x + tc.x;
+  mx += uSwell * sin((r.y + mx) / 20.0 + tc.y);
+  float my = r.y - tc.z;
+  my += uTurbulence * cos(r.x / 23.0 + tc.w);
+  return r.z - (sin(mx * freq.x) * uAmplitude + sin(my * freq.y) * uAmplitude + uHeight);
+}
+
+float raymarch(vec3 pos, vec3 dir, vec2 freq, vec4 tc) {
+  float dist = 0.0;
+  for (int i = 0; i < 128; i++) {
+    if (float(i) >= uSteps) break;
+    float dscene = plasma(pos + dist * dir, freq, tc);
+    if (abs(dscene) < 0.1) break;
+    dist += 0.9 * dscene;
+    if (!(abs(dist) < MAX_DIST)) return MAX_DIST;
+  }
+  return dist;
+}
+
+void main() {
+  float T = iTime * uSpeed;
+  vec2 freq = vec2(uWaveScale / 7.0, (uWaveScale * uWaveRatio) / 3.0);
+  vec4 tc = vec4(T / 0.130, T / 0.810, T / 0.200, T / 0.710);
+  float c, s;
+  float vfov = (3.14159 / 2.3) / max(uZoom, 0.05);
+  vec3 cam = vec3(0.0, 0.0, 30.0);
+  vec2 uv = (gl_FragCoord.xy / iResolution.xy) - 0.5;
+  uv.x *= iResolution.x / iResolution.y;
+  uv.y *= -1.0;
+
+  vec3 dir = vec3(0.0, 0.0, -1.0);
+  float ulen = length(uv);
+  float xrot = vfov * ulen;
+  c = cos(xrot); s = sin(xrot);
+  dir = mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c) * dir;
+  vec2 nuv = ulen > 1e-5 ? uv / ulen : vec2(1.0, 0.0);
+  c = nuv.x; s = nuv.y;
+  dir = mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0) * dir;
+  c = cos(uTilt); s = sin(uTilt);
+  dir = mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c) * dir;
+
+  if (uEnableMouse) {
+    float yaw = (uMouse.x - 0.5) * uParallax * 0.4;
+    float pitch = (uMouse.y - 0.5) * uParallax * 0.4;
+    c = cos(yaw); s = sin(yaw);
+    dir = mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c) * dir;
+    c = cos(pitch); s = sin(pitch);
+    dir = mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c) * dir;
+  }
+
+  float dist = raymarch(cam, dir, freq, tc);
+  vec3 pos = cam + dist * dir;
+  float t = clamp(uFogDepth / max(dist, 0.001), 0.0, 1.0);
+  vec3 body = mix(uWaveColor, uCrestColor, clamp(pos.z * 0.08 + 0.5, 0.0, 1.0));
+  vec3 col = mix(uHorizonColor, body, t);
+  col = clamp(col * uBrightness, 0.0, 1.0);
+
+  float alpha = clamp(t, 0.0, 1.0) * uOpacity;
+  if (uGrain > 0.5) {
+    float g = hash21(gl_FragCoord.xy + mod(iTime, 64.0) * 11.0);
+    alpha += (g - 0.5) * uGrainIntensity;
+  }
+  alpha = clamp(alpha, 0.0, 1.0);
+  fragColor = vec4(col * alpha, alpha);
+}`;
+
+    const GradientWaves = ({
+      horizonColor = '#5227FF',
+      waveColor = '#FF9FFC',
+      crestColor = '#FFFFFF',
+      speed = 0.4,
+      amplitude = 2.5,
+      waveScale = 0.6,
+      waveRatio = 0.9,
+      swell = 35,
+      turbulence = 20,
+      tilt = 1.11,
+      zoom = 1,
+      height = 5.5,
+      fogDepth = 15,
+      detail = 'medium',
+      brightness = 1,
+      opacity = 1,
+      mouseInteraction = true,
+      parallaxStrength = 0.5,
+      grain = true,
+      grainIntensity = 0.05,
+      active = true,
+      className = '',
+    }) => {
+      const containerRef = useRef(null);
+      const activeRef = useRef(active);
+      const runtimeRef = useRef(null);
+
+      useEffect(() => {
+        activeRef.current = active;
+        if (!runtimeRef.current) return;
+        active ? runtimeRef.current.start() : runtimeRef.current.stop();
+      }, [active]);
+
+      useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        let disposed = false;
+        let disposeRenderer = () => {};
+
+        const boot = async () => {
+          try {
+            const { Renderer, Program, Mesh, Triangle } = await window.__getGradientWavesOgl();
+            if (disposed) return;
+
+            const mobileDetail = window.matchMedia?.('(max-width: 767px)').matches;
+            const renderer = new Renderer({
+              webgl: 2,
+              alpha: true,
+              premultipliedAlpha: true,
+              antialias: false,
+              depth: false,
+              stencil: false,
+              powerPreference: 'low-power',
+              dpr: mobileDetail
+                ? Math.min(window.devicePixelRatio || 1, 0.8)
+                : Math.min(window.devicePixelRatio || 1, 1),
+            });
+            const gl = renderer.gl;
+            gl.clearColor(0, 0, 0, 0);
+            const canvas = gl.canvas;
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            canvas.style.display = 'block';
+            canvas.style.pointerEvents = 'none';
+            container.appendChild(canvas);
+
+            const finePointer = window.matchMedia?.('(pointer: fine)').matches ?? true;
+            const enableMouse = mouseInteraction && finePointer;
+            const geometry = new Triangle(gl);
+            const program = new Program(gl, {
+              vertex: gradientWavesVertex,
+              fragment: gradientWavesFragment,
+              uniforms: {
+                iTime: { value: 0 },
+                iResolution: { value: new Float32Array([1, 1]) },
+                uSpeed: { value: speed },
+                uAmplitude: { value: amplitude },
+                uWaveScale: { value: waveScale },
+                uWaveRatio: { value: waveRatio },
+                uSwell: { value: swell },
+                uTurbulence: { value: turbulence },
+                uTilt: { value: tilt },
+                uZoom: { value: zoom },
+                uHeight: { value: height },
+                uFogDepth: { value: fogDepth },
+                uSteps: { value: mobileDetail ? 40 : Math.min(50, gradientWavesDetailToSteps(detail)) },
+                uBrightness: { value: brightness },
+                uOpacity: { value: opacity },
+                uGrain: { value: grain ? 1 : 0 },
+                uGrainIntensity: { value: grainIntensity },
+                uMouse: { value: new Float32Array([0.5, 0.5]) },
+                uParallax: { value: parallaxStrength },
+                uEnableMouse: { value: enableMouse },
+                uHorizonColor: { value: new Float32Array(gradientWavesHexToRgb(horizonColor)) },
+                uWaveColor: { value: new Float32Array(gradientWavesHexToRgb(waveColor)) },
+                uCrestColor: { value: new Float32Array(gradientWavesHexToRgb(crestColor)) },
+              },
+            });
+            const mesh = new Mesh(gl, { geometry, program });
+
+            const setSize = () => {
+              const rect = container.getBoundingClientRect();
+              const width = Math.max(1, Math.floor(rect.width));
+              const canvasHeight = Math.max(1, Math.floor(rect.height));
+              renderer.setSize(width, canvasHeight);
+              program.uniforms.iResolution.value[0] = gl.drawingBufferWidth;
+              program.uniforms.iResolution.value[1] = gl.drawingBufferHeight;
+              renderer.render({ scene: mesh });
+            };
+
+            const resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(setSize) : null;
+            resizeObserver?.observe(container);
+            if (!resizeObserver) window.addEventListener('resize', setSize);
+            setSize();
+
+            const pointerSurface = container.closest('.premium-hero') || container.parentElement || container;
+            const currentMouse = [0.5, 0.5];
+            const targetMouse = [0.5, 0.5];
+            const onPointerMove = event => {
+              if (!enableMouse || event.pointerType === 'touch') return;
+              const rect = pointerSurface.getBoundingClientRect();
+              targetMouse[0] = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+              targetMouse[1] = 1 - Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+            };
+            const onPointerLeave = () => {
+              targetMouse[0] = 0.5;
+              targetMouse[1] = 0.5;
+            };
+            if (enableMouse) {
+              pointerSurface.addEventListener('pointermove', onPointerMove, { passive: true });
+              pointerSurface.addEventListener('pointerleave', onPointerLeave);
+            }
+
+            let frame = 0;
+            let isVisible = true;
+            let isPageVisible = !document.hidden;
+            const startedAt = performance.now();
+            const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+            const frameInterval = 1000 / (mobileDetail ? 24 : 30);
+            let lastRenderedAt = 0;
+
+            const loop = time => {
+              if (time - lastRenderedAt >= frameInterval) {
+                lastRenderedAt = time;
+                program.uniforms.iTime.value = (time - startedAt) * 0.001;
+                currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
+                currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
+                program.uniforms.uMouse.value[0] = currentMouse[0];
+                program.uniforms.uMouse.value[1] = currentMouse[1];
+                renderer.render({ scene: mesh });
+              }
+              frame = window.requestAnimationFrame(loop);
+            };
+            const tryStart = () => {
+              if (activeRef.current && !reduceMotion && isVisible && isPageVisible && frame === 0) {
+                frame = window.requestAnimationFrame(loop);
+              }
+            };
+            const tryStop = () => {
+              if (frame !== 0) {
+                window.cancelAnimationFrame(frame);
+                frame = 0;
+              }
+            };
+
+            const intersectionObserver = typeof IntersectionObserver !== 'undefined'
+              ? new IntersectionObserver(([entry]) => {
+                  isVisible = entry.isIntersecting;
+                  isVisible ? tryStart() : tryStop();
+                }, { threshold: 0 })
+              : null;
+            intersectionObserver?.observe(container);
+            const onVisibility = () => {
+              isPageVisible = !document.hidden;
+              isPageVisible ? tryStart() : tryStop();
+            };
+            document.addEventListener('visibilitychange', onVisibility);
+            const onContextLost = event => {
+              event.preventDefault();
+              tryStop();
+              container.classList.add('gradient-waves--fallback');
+            };
+            canvas.addEventListener('webglcontextlost', onContextLost);
+            runtimeRef.current = { start: tryStart, stop: tryStop };
+            tryStart();
+
+            disposeRenderer = () => {
+              tryStop();
+              runtimeRef.current = null;
+              resizeObserver?.disconnect();
+              intersectionObserver?.disconnect();
+              if (!resizeObserver) window.removeEventListener('resize', setSize);
+              document.removeEventListener('visibilitychange', onVisibility);
+              pointerSurface.removeEventListener('pointermove', onPointerMove);
+              pointerSurface.removeEventListener('pointerleave', onPointerLeave);
+              canvas.removeEventListener('webglcontextlost', onContextLost);
+              geometry.remove?.();
+              if (canvas.parentNode === container) container.removeChild(canvas);
+              gl.getExtension('WEBGL_lose_context')?.loseContext();
+            };
+          } catch (error) {
+            console.warn('GradientWaves fallback:', error);
+            container.classList.add('gradient-waves--fallback');
+          }
+        };
+
+        boot();
+        return () => {
+          disposed = true;
+          disposeRenderer();
+        };
+      }, [
+        horizonColor,
+        waveColor,
+        crestColor,
+        speed,
+        amplitude,
+        waveScale,
+        waveRatio,
+        swell,
+        turbulence,
+        tilt,
+        zoom,
+        height,
+        fogDepth,
+        detail,
+        brightness,
+        opacity,
+        mouseInteraction,
+        parallaxStrength,
+        grain,
+        grainIntensity,
+      ]);
+
+      return <div ref={containerRef} className={`gradient-waves-container ${className}`.trim()} />;
+    };
+
+    const BackgroundGlow = ({ introComplete }) => (
+      <div className={`hero-lightfield ${introComplete ? 'is-ready' : ''}`} aria-hidden="true">
+        <GradientWaves
+          horizonColor="#5227FF"
+          waveColor="#FF9FFC"
+          crestColor="#FFFFFF"
+          speed={0.4}
+          amplitude={2.5}
+          waveScale={0.6}
+          waveRatio={0.9}
+          swell={35}
+          turbulence={20}
+          tilt={1.11}
+          zoom={1}
+          height={5.5}
+          fogDepth={15}
+          detail="medium"
+          brightness={1}
+          opacity={1}
+          mouseInteraction
+          parallaxStrength={0.5}
+          grain
+          grainIntensity={0.05}
+          active={introComplete}
+        />
+        <div className="hero-lightfield__veil"></div>
+      </div>
+    );
+
+    const Hero = ({ introComplete }) => (
+      <section id="home" className={`premium-hero ${introComplete ? 'is-ready' : ''}`} aria-labelledby="hero-title">
+        <BackgroundGlow introComplete={introComplete} />
+
+        <div className="premium-hero__inner">
+          <div className="premium-hero__content">
+            <p className="premium-hero__eyebrow premium-hero__reveal" style={{ '--hero-delay': '0.12s' }}>
+              Video Editor · Motion Designer · AIGC Creator
+            </p>
+
+            <h1 id="hero-title" className="premium-hero__title" aria-label="LIN YANG">
+              <span className="premium-hero__title-mask" aria-hidden="true">
+                <span className="premium-hero__title-line premium-hero__title-line--lin premium-hero__reveal" style={{ '--hero-delay': '0.22s' }}>LIN</span>
+              </span>
+              <span className="premium-hero__title-mask" aria-hidden="true">
+                <span className="premium-hero__title-line premium-hero__title-line--yang premium-hero__reveal" style={{ '--hero-delay': '0.34s' }}>YANG</span>
+              </span>
+            </h1>
+
+            <p className="premium-hero__tagline premium-hero__reveal" style={{ '--hero-delay': '0.5s' }}>
+              Visual storytelling through<br />motion &amp; artificial intelligence.
+            </p>
+
+            <div className="premium-hero__latest premium-hero__reveal" style={{ '--hero-delay': '0.64s' }}>
+              <Sparkles size={13} className="premium-hero__latest-mark" />
+              <span>LATEST // 2026 VISUAL REEL</span>
+            </div>
+
+            <div className="premium-hero__actions premium-hero__reveal" style={{ '--hero-delay': '0.76s' }}>
+              <Button
+                href="#circular"
+                onClick={event => scrollToSection(event, 'circular')}
+                ariaLabel="查看作品案例"
+              >
+                VIEW WORKS <ArrowUpRight size={17} />
+              </Button>
+            </div>
           </div>
         </div>
-      );
-    };
+      </section>
+    );
+
+    const MarqueeText = ({ items = ['MOTION DESIGN', 'AI CINEMA', 'EDITING', 'VISUAL STORYTELLING'] }) => (
+      <div className="premium-marquee" role="region" aria-label="创作方向：动态设计、AI 影像、剪辑与视觉叙事">
+        <div className="premium-marquee__track" aria-hidden="true">
+          {[0, 1].map(groupIndex => (
+            <div className="premium-marquee__group" key={`marquee-group-${groupIndex}`}>
+              {items.map((item, index) => (
+                <React.Fragment key={`${groupIndex}-${item}`}>
+                  <span className={`premium-marquee__item ${index % 2 === 1 ? 'premium-marquee__item--accent' : ''}`}>{item}</span>
+                  <span className="premium-marquee__divider">//</span>
+                </React.Fragment>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
 
     const CinematicIntro = ({ onComplete }) => {
+      const [progress, setProgress] = useState(0);
+      const [isLeaving, setIsLeaving] = useState(false);
+      const completedRef = useRef(false);
+      const finishIntro = useCallback(() => {
+        if (completedRef.current) return;
+        completedRef.current = true;
+        onComplete(true);
+      }, [onComplete]);
+
       useEffect(() => {
         if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-          onComplete(true);
+          setProgress(100);
+          setIsLeaving(true);
+          finishIntro();
           return;
         }
-        const fallbackTimer = window.setTimeout(() => onComplete(true), 2100);
-        return () => clearTimeout(fallbackTimer);
-      }, [onComplete]);
+
+        let pageReady = document.readyState === 'complete';
+        let animationFrame = 0;
+        let holdTimer = 0;
+        let hasStartedExit = false;
+        let lastProgress = -1;
+        const startedAt = performance.now();
+        const minimumDuration = 2050;
+
+        const markPageReady = () => {
+          pageReady = true;
+        };
+
+        const completeProgress = () => {
+          if (hasStartedExit) return;
+          hasStartedExit = true;
+          window.cancelAnimationFrame(animationFrame);
+          window.removeEventListener('load', markPageReady);
+          setProgress(100);
+          holdTimer = window.setTimeout(() => {
+            setIsLeaving(true);
+            finishIntro();
+          }, 420);
+        };
+
+        const updateProgress = now => {
+          const timedProgress = Math.min(100, Math.round(((now - startedAt) / minimumDuration) * 100));
+          const nextProgress = pageReady ? timedProgress : Math.min(timedProgress, 92);
+
+          if (nextProgress !== lastProgress) {
+            lastProgress = nextProgress;
+            setProgress(nextProgress);
+          }
+
+          if (nextProgress >= 100) {
+            completeProgress();
+            return;
+          }
+
+          animationFrame = window.requestAnimationFrame(updateProgress);
+        };
+
+        if (!pageReady) window.addEventListener('load', markPageReady, { once: true });
+        animationFrame = window.requestAnimationFrame(updateProgress);
+        const fallbackTimer = window.setTimeout(completeProgress, 5000);
+
+        return () => {
+          window.removeEventListener('load', markPageReady);
+          window.cancelAnimationFrame(animationFrame);
+          window.clearTimeout(holdTimer);
+          window.clearTimeout(fallbackTimer);
+        };
+      }, [finishIntro]);
 
       return (
         <div
-          className="cinematic-intro"
+          className={`cinematic-intro ${isLeaving ? 'is-leaving' : ''}`}
           aria-hidden="true"
           onAnimationEnd={event => {
-            if (event.target === event.currentTarget && event.animationName === 'cinematicLoaderExit') {
-              onComplete(true);
+            if (event.target === event.currentTarget && event.animationName === 'cinematicIntroExit') {
+              finishIntro();
             }
           }}
         >
-          <div className="cinematic-intro__loader">
-            <div className="cinematic-intro__track">
-              <div className="cinematic-intro__fill"></div>
+          <div className="cinematic-intro__brand">
+            <div
+              className="cinematic-intro__word"
+              data-text="PORTFOLIO"
+              style={{ '--intro-progress': `${progress}%` }}
+            >
+              PORTFOLIO
             </div>
             <div className="cinematic-intro__meta">
-              <span>Loading visual archive</span>
-              <span>100</span>
+              <span>Video Editor · Motion Design</span>
+              <span>2026 · {String(progress).padStart(3, '0')}%</span>
             </div>
           </div>
+
+          <div className="cinematic-intro__signature">LIN YANG / AIGC</div>
+          <div className="cinematic-intro__grain"></div>
         </div>
       );
     };
@@ -3210,14 +4452,23 @@
         const container = containerRef.current;
         if (!container) return;
 
-        const observer = new IntersectionObserver(([entry]) => {
+        const nearObserver = new IntersectionObserver(([entry]) => {
+          if (!entry.isIntersecting) return;
+          setShouldLoad(true);
+          nearObserver.unobserve(container);
+        }, { rootMargin: '400px 0px', threshold: 0.01 });
+
+        const playbackObserver = new IntersectionObserver(([entry]) => {
           const isActuallyVisible = entry.isIntersecting && entry.intersectionRatio >= 0.2;
           setIsInView(isActuallyVisible);
-          if (isActuallyVisible) setShouldLoad(true);
         }, { rootMargin: '0px', threshold: 0.2 });
 
-        observer.observe(container);
-        return () => observer.disconnect();
+        nearObserver.observe(container);
+        playbackObserver.observe(container);
+        return () => {
+          nearObserver.disconnect();
+          playbackObserver.disconnect();
+        };
       }, []);
 
       useEffect(() => {
@@ -3236,7 +4487,7 @@
 
       return (
         <div ref={containerRef} className={`absolute inset-0 ${className}`}>
-          <video ref={videoRef} className="h-full w-full object-cover" poster={poster} preload="none" muted loop playsInline aria-label={ariaLabel}>
+          <video ref={videoRef} className="h-full w-full object-cover" poster={shouldLoad ? poster : undefined} preload="none" muted loop playsInline aria-label={ariaLabel}>
             {shouldLoad && isInView && isActive && <source src={src} type="video/mp4" />}
           </video>
         </div>
@@ -3289,7 +4540,7 @@
                       poster="./assets/project-preview/showreel-preview-20s-poster.jpg"
                     />
                     <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/10 to-black/15 pointer-events-none"></div>
-
+                   
                 </div>
 
                 <a
@@ -3318,13 +4569,163 @@
 
     const GallerySection = ({ setActiveModal }) => {
       const [ref, isVisible] = useScrollReveal();
-      const [lightboxItem, setLightboxItem] = useState(null);
+      const posterCount = 14;
+      const posterAngleStep = 360 / posterCount;
+      const posterNavRef = useRef(null);
+      const posterNavDragRef = useRef(false);
+      const posterSwipeRef = useRef({ active: false, horizontal: false, pointerId: null, startX: 0, startY: 0 });
+      const posterClickLockRef = useRef(false);
+      const posterClickUnlockTimerRef = useRef(0);
+      const [activePosterIndex, setActivePosterIndex] = useState(0);
+      const [posterRotationStep, setPosterRotationStep] = useState(0);
+
+      const normalizePosterIndex = useCallback(index => (
+        ((index % posterCount) + posterCount) % posterCount
+      ), []);
+
+      const focusPoster = useCallback(index => {
+        const normalizedIndex = normalizePosterIndex(index);
+        setPosterRotationStep(currentStep => {
+          const currentIndex = normalizePosterIndex(currentStep);
+          let delta = normalizedIndex - currentIndex;
+          if (delta > posterCount / 2) delta -= posterCount;
+          if (delta < -posterCount / 2) delta += posterCount;
+          return currentStep + delta;
+        });
+        setActivePosterIndex(normalizedIndex);
+      }, [normalizePosterIndex]);
+
+      const getPosterOffset = index => {
+        let offset = index - activePosterIndex;
+        if (offset > posterCount / 2) offset -= posterCount;
+        if (offset < -posterCount / 2) offset += posterCount;
+        return offset;
+      };
+
+      const handlePosterStagePointerDown = event => {
+        if (event.pointerType !== 'touch' || !event.isPrimary || !event.target.closest?.('[data-aigc-poster-card]')) return;
+        posterSwipeRef.current = {
+          active: true,
+          horizontal: false,
+          pointerId: event.pointerId,
+          startX: event.clientX,
+          startY: event.clientY,
+        };
+      };
+
+      const handlePosterStagePointerMove = event => {
+        const gesture = posterSwipeRef.current;
+        if (!gesture.active || gesture.pointerId !== event.pointerId) return;
+        const deltaX = event.clientX - gesture.startX;
+        const deltaY = event.clientY - gesture.startY;
+
+        if (!gesture.horizontal) {
+          if (Math.abs(deltaX) < 12 && Math.abs(deltaY) < 12) return;
+          if (Math.abs(deltaY) >= Math.abs(deltaX)) {
+            gesture.active = false;
+            return;
+          }
+          if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+          gesture.horizontal = true;
+          event.currentTarget.setPointerCapture?.(event.pointerId);
+        }
+
+        event.preventDefault();
+      };
+
+      const finishPosterStagePointer = event => {
+        const gesture = posterSwipeRef.current;
+        if (!gesture.active || gesture.pointerId !== event.pointerId) return;
+        posterSwipeRef.current.active = false;
+        const deltaX = event.clientX - gesture.startX;
+        const deltaY = event.clientY - gesture.startY;
+        const isHorizontalSwipe = gesture.horizontal && Math.abs(deltaX) >= 42;
+
+        if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+
+        if (!isHorizontalSwipe) return;
+        event.preventDefault();
+        posterClickLockRef.current = true;
+        window.clearTimeout(posterClickUnlockTimerRef.current);
+        focusPoster(activePosterIndex + (deltaX < 0 ? 1 : -1));
+        posterClickUnlockTimerRef.current = window.setTimeout(() => {
+          posterClickLockRef.current = false;
+        }, 320);
+      };
+
+      const cancelPosterStagePointer = event => {
+        posterSwipeRef.current.active = false;
+        if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      const scrubPosterNav = clientX => {
+        const nav = posterNavRef.current;
+        if (!nav) return;
+        const dots = Array.from(nav.querySelectorAll('button'));
+        let nextIndex = 0;
+        let nearestDistance = Infinity;
+
+        dots.forEach((dot, index) => {
+          const rect = dot.getBoundingClientRect();
+          const distance = Math.abs(clientX - (rect.left + rect.width / 2));
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nextIndex = index;
+          }
+        });
+
+        if (nextIndex !== activePosterIndex) focusPoster(nextIndex);
+      };
+
+      const handlePosterNavPointerDown = event => {
+        if (event.button !== undefined && event.button !== 0) return;
+        posterNavDragRef.current = true;
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        scrubPosterNav(event.clientX);
+      };
+
+      const handlePosterNavPointerMove = event => {
+        if (!posterNavDragRef.current) return;
+        event.preventDefault();
+        scrubPosterNav(event.clientX);
+      };
+
+      const handlePosterNavPointerEnd = event => {
+        if (!posterNavDragRef.current) return;
+        posterNavDragRef.current = false;
+        if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      useEffect(() => () => window.clearTimeout(posterClickUnlockTimerRef.current), []);
 
       const galleryItems = [
         { title: '人物情绪特写', category: 'AIGC', year: '2026', desc: '人物设定与近景情绪表达测试。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-01.mp4', poster: './assets/visual-gallery/videos/aigc-video-01-poster.jpg' },
         { title: '叙事分镜实验', category: 'AIGC', year: '2026', desc: '镜头节奏与人物关系的分镜探索。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-03.mp4', poster: './assets/visual-gallery/videos/aigc-video-03-poster.jpg' },
         { title: '游戏宣传影像', category: 'AIGC', year: '2026', desc: '二维赛璐璐角色与抽象 MG 合成实验。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-04.mp4', poster: './assets/visual-gallery/videos/aigc-video-04-poster.jpg' },
         { title: '归途光影', category: 'AIGC', year: '2026', desc: '列车夕照、人物倒影与乡野景观的电影感生成实验。', media: './assets/visual-gallery/stills/gallery-still-05-doubao-v2.jpg' },
+      ];
+
+      const posterItems = [
+        { title: '她在凌晨三点醒来', category: 'AI POSTER', year: '2026', desc: '悬疑氛围与中文书法标题的电影海报实验。', media: './assets/circular-posters/poster-she-woke.webp' },
+        { title: '旅人不说人间事', category: 'AI POSTER', year: '2026', desc: '暮色旅途主题的电影感视觉生成实验。', media: './assets/circular-posters/poster-travelers-in-wind.webp' },
+        { title: '凌晨未读', category: 'AI POSTER', year: '2026', desc: '深夜城市、月光与孤独叙事的概念海报。', media: './assets/circular-posters/poster-last-seen-midnight.webp' },
+        { title: '入海失焦', category: 'AI POSTER', year: '2026', desc: '城市夜景与人物背影构成的失焦叙事实验。', media: './assets/circular-posters/poster-out-of-focus.webp' },
+        { title: '野生青春', category: 'AI POSTER', year: '2026', desc: '公路、伙伴与落日组成的青春电影海报。', media: './assets/circular-posters/poster-youth-in-wild.webp' },
+        { title: '公路没有尽头', category: 'AI POSTER', year: '2026', desc: '辽阔公路与远行人物的电影叙事视觉。', media: './assets/circular-posters/poster-endless-road.webp' },
+        { title: '来自昨天的这封信', category: 'AI POSTER', year: '2026', desc: '室内暖光、旧信与时间记忆的概念海报。', media: './assets/circular-posters/poster-message-yesterday.webp' },
+        { title: '风从少年经过', category: 'AI POSTER', year: '2026', desc: '夕阳群像与少年记忆的青春视觉实验。', media: './assets/circular-posters/poster-wind-passed-by.webp' },
+        { title: '逃离星期一', category: 'AI POSTER', year: '2026', desc: '城市出走与黄昏情绪的电影海报实验。', media: './assets/circular-posters/poster-escape-monday.webp' },
+        { title: '夏日逃跑计划', category: 'AI POSTER', year: '2026', desc: '海边车站与夏日旅程的青春概念海报。', media: './assets/circular-posters/poster-summer-escape.webp' },
+        { title: '风从少年经过 · 烟火', category: 'AI POSTER', year: '2026', desc: '夜空烟火与人物关系的电影感视觉生成。', media: './assets/circular-posters/poster-fireworks-youth.webp' },
+        { title: '晚风不营业', category: 'AI POSTER', year: '2026', desc: '滨海夜色与孤独公路的情绪海报实验。', media: './assets/circular-posters/poster-wind-off-duty.webp' },
+        { title: '今日无事发生', category: 'AI POSTER', year: '2026', desc: '橙蓝暮色与城市日常的叙事视觉实验。', media: './assets/circular-posters/poster-nothing-happened.webp' },
+        { title: '月球失联', category: 'AI POSTER', year: '2026', desc: '月球、城市与宇宙孤独感的科幻概念海报。', media: './assets/circular-posters/poster-lost-on-moon.webp' },
       ];
 
       const colors = [
@@ -3369,17 +4770,7 @@
                   className="cinematic-card"
                 >
                   <div
-                    className="group relative aspect-[16/10] bg-[#07030d] text-white overflow-hidden flex flex-col justify-end p-6 cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`打开预览 ${item.title}`}
-                    onClick={() => setLightboxItem(item)}
-                    onKeyDown={event => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        setLightboxItem(item);
-                      }
-                    }}
+                    className="group relative aspect-[16/10] bg-[#07030d] text-white overflow-hidden flex flex-col justify-end p-6 cursor-default"
                   >
                     <div className={`absolute inset-0 bg-gradient-to-tr ${colors[i % colors.length]} opacity-70 group-hover:opacity-100 transition-opacity`}></div>
                     {item.mediaType === 'video' ? (
@@ -3400,7 +4791,7 @@
                     ) : null}
                     {item.media && <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-black/10"></div>}
                     <div className="absolute inset-0 bg-[radial-gradient(#9ca3af_1px,transparent_1px)] [background-size:20px_20px] opacity-10"></div>
-
+                    
                     <div className="relative z-10 flex justify-between items-center mb-2">
                       <span className="font-mono text-[10px] text-black bg-[#CCFF00] px-2.5 py-0.5 rounded font-bold">{item.category}</span>
                       <span className="font-mono text-xs text-gray-300 font-bold">{item.year}</span>
@@ -3411,8 +4802,174 @@
                 </BorderGlow>
               ))}
             </div>
+
+            <div className={`cinematic-reveal mt-10 md:mt-14 ${isVisible ? 'is-visible' : ''}`}>
+              <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <span className="font-mono text-[9px] tracking-[0.2em] text-[#CCFF00]">AI POSTER ARCHIVE / 14</span>
+                  <h3 className="mt-1 text-xl md:text-2xl font-black tracking-[-0.03em] text-white">AI 视觉海报系列</h3>
+                  <p className="mt-1 text-xs text-white/38">桌面点击侧边卡片旋转，手机端在卡片区域左右滑动。</p>
+                </div>
+                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 font-mono text-[9px] tracking-[0.16em] text-white/45">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#CCFF00] shadow-[0_0_10px_rgba(204,255,0,0.7)]"></span>
+                  CLICK / SWIPE / 360°
+                </div>
+              </div>
+
+              <div
+                role="region"
+                aria-roledescription="3D 环形画廊"
+                tabIndex={0}
+                aria-label="AI 视觉海报 360 度三维环形画廊"
+                onPointerDown={handlePosterStagePointerDown}
+                onPointerMove={handlePosterStagePointerMove}
+                onPointerUp={finishPosterStagePointer}
+                onPointerCancel={cancelPosterStagePointer}
+                onLostPointerCapture={cancelPosterStagePointer}
+                onKeyDown={event => {
+                  if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    focusPoster(activePosterIndex - 1);
+                  } else if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    focusPoster(activePosterIndex + 1);
+                  } else if (event.key === 'Home') {
+                    event.preventDefault();
+                    focusPoster(0);
+                  } else if (event.key === 'End') {
+                    event.preventDefault();
+                    focusPoster(posterItems.length - 1);
+                  }
+                }}
+                className="ai-poster-ring-shell cursor-default select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]/70"
+              >
+                <div
+                  className="ai-poster-ring"
+                  style={{ '--poster-ring-rotation': `${-posterRotationStep * posterAngleStep}deg` }}
+                >
+                  {posterItems.map((item, index) => {
+                    const offset = getPosterOffset(index);
+                    const distance = Math.abs(offset);
+                    const isActive = distance === 0;
+                    const isVisibleCard = distance <= 3;
+                    const opacity = isVisibleCard ? Math.max(0.4, 1 - distance * 0.2) : 0;
+                    const brightness = Math.max(0.58, 1 - distance * 0.14);
+                    const saturation = Math.max(0.68, 1 - distance * 0.1);
+
+                    return (
+                      <div
+                        key={item.media}
+                        className={`ai-poster-ring-card ${isActive ? 'is-active' : ''}`}
+                        aria-hidden={!isVisibleCard}
+                        style={{
+                          '--poster-angle': `${index * posterAngleStep}deg`,
+                          opacity,
+                          filter: `brightness(${brightness}) saturate(${saturation})`,
+                          pointerEvents: isVisibleCard ? 'auto' : 'none',
+                          zIndex: isActive ? 200 : 100 - distance,
+                        }}
+                      >
+                        <div className="ai-poster-ring-card__surface">
+                          <BorderGlow
+                            edgeSensitivity={38}
+                            glowColor="78 100 63"
+                            backgroundColor="#080311"
+                            borderRadius={18}
+                            glowRadius={22}
+                            glowIntensity={isActive ? 0.58 : 0.3}
+                            coneSpread={18}
+                            colors={['#CCFF00', '#c084fc', '#38bdf8']}
+                            fillOpacity={isActive ? 0.2 : 0.12}
+                            className="h-full"
+                          >
+                            <button
+                              type="button"
+                              data-aigc-poster-card
+                              tabIndex={isActive ? 0 : -1}
+                              aria-current={isActive ? 'true' : undefined}
+                              aria-label={`第 ${index + 1} 张，共 ${posterItems.length} 张：${item.title}${isActive ? '，当前海报' : '，点击旋转到正面'}`}
+                              onClick={event => {
+                                if (posterClickLockRef.current) {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  return;
+                                }
+                                focusPoster(index);
+                              }}
+                              className="group/poster relative block h-full w-full overflow-hidden bg-black text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]"
+                            >
+                              <img
+                                src={item.media}
+                                alt={item.title}
+                                loading="lazy"
+                                decoding="async"
+                                draggable={false}
+                                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                              />
+                              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/5 to-black/10"></div>
+                              <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-3 md:p-4">
+                                <span className="rounded bg-[#CCFF00] px-2 py-0.5 font-mono text-[8px] font-bold tracking-[0.12em] text-black">AI POSTER</span>
+                                <span className="font-mono text-[9px] tracking-[0.14em] text-white/65">{String(index + 1).padStart(2, '0')}</span>
+                              </div>
+                              <div className="pointer-events-none absolute inset-x-0 bottom-0 p-3 md:p-4">
+                                <h4 className="text-sm md:text-base font-black leading-tight tracking-[-0.02em] text-white transition-colors group-hover/poster:text-[#CCFF00]">{item.title}</h4>
+                                <p className="mt-1 hidden text-[10px] leading-relaxed text-white/48 md:block">{item.desc}</p>
+                              </div>
+                            </button>
+                          </BorderGlow>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="sr-only" role="status" aria-live="polite">
+                  第 {activePosterIndex + 1} 张，共 {posterItems.length} 张：{posterItems[activePosterIndex].title}
+                </p>
+              </div>
+
+              <div className="mt-3 flex justify-center md:mt-5">
+                <div
+                  ref={posterNavRef}
+                  role="group"
+                  tabIndex={0}
+                  aria-label={`拖动或点击切换 AI 视觉海报，当前第 ${activePosterIndex + 1} 张`}
+                  onPointerDown={handlePosterNavPointerDown}
+                  onPointerMove={handlePosterNavPointerMove}
+                  onPointerUp={handlePosterNavPointerEnd}
+                  onPointerCancel={handlePosterNavPointerEnd}
+                  onKeyDown={event => {
+                    if (event.key === 'ArrowLeft') {
+                      event.preventDefault();
+                      focusPoster(activePosterIndex - 1);
+                    } else if (event.key === 'ArrowRight') {
+                      event.preventDefault();
+                      focusPoster(activePosterIndex + 1);
+                    } else if (event.key === 'Home') {
+                      event.preventDefault();
+                      focusPoster(0);
+                    } else if (event.key === 'End') {
+                      event.preventDefault();
+                      focusPoster(posterItems.length - 1);
+                    }
+                  }}
+                  className={`motion-pagination-pop flex h-14 cursor-ew-resize touch-none select-none items-center justify-center gap-0.5 rounded-full bg-[#202023] px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_12px_30px_rgba(0,0,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 sm:gap-1 sm:px-5 ${isVisible ? 'is-visible' : ''}`}
+                >
+                  {posterItems.map((item, index) => (
+                    <button
+                      key={`aigc-poster-dot-${item.media}`}
+                      type="button"
+                      onClick={() => focusPoster(index)}
+                      aria-label={`切换到第 ${index + 1} 张：${item.title}`}
+                      aria-current={activePosterIndex === index ? 'true' : undefined}
+                      className={`relative flex h-10 shrink-0 items-center justify-center transition-[width] duration-300 ease-out ${activePosterIndex === index ? 'w-10 sm:w-12' : 'w-4 sm:w-5'}`}
+                    >
+                      <span className={`block h-2 rounded-full transition-all duration-300 ease-out ${activePosterIndex === index ? 'w-8 bg-[#a9a9ae] sm:w-10' : 'w-1.5 bg-white/75 hover:bg-white sm:w-2'}`}></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-          {lightboxItem && <ImageLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
         </section>
       );
     };
@@ -3420,6 +4977,10 @@
     const PhotographySection = () => {
       const [ref, isVisible] = useScrollReveal();
       const [lightboxItem, setLightboxItem] = useState(null);
+      const [videosExpanded, setVideosExpanded] = useState(false);
+      const [photosExpanded, setPhotosExpanded] = useState(false);
+      const VISIBLE_JOURNAL_VIDEOS = 2;
+      const VISIBLE_JOURNAL_PHOTOS = 3;
       const journalVideos = [
         { title: '汽车短片', subtitle: 'AUTOMOTIVE / NIGHT', video: './assets/visual-journal/journal-06.mp4', poster: './assets/visual-journal/journal-06-poster.jpg' },
         { title: '极光星夜', subtitle: 'AURORA / NIGHT', video: './assets/visual-journal/journal-05.mp4', poster: './assets/visual-journal/journal-05-poster.jpg' },
@@ -3487,8 +5048,8 @@
               </p>
             </div>
 
-            <div className={`cinematic-reveal-grid grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 mb-12 md:mb-16 ${isVisible ? 'is-visible' : ''}`}>
-              {journalVideos.map((item, index) => (
+            <div className={`cinematic-reveal-grid grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 ${isVisible ? 'is-visible' : ''}`}>
+              {journalVideos.slice(0, VISIBLE_JOURNAL_VIDEOS).map((item, index) => (
                 <BorderGlow
                   key={item.video}
                   className="cinematic-card aspect-video"
@@ -3526,13 +5087,88 @@
               ))}
             </div>
 
-            <div className="mb-5 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setVideosExpanded(value => !value)}
+              aria-expanded={videosExpanded}
+              aria-controls="visual-journal-more-videos"
+              className="group mt-5 flex w-full items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-left transition-all duration-500 hover:border-[#CCFF00]/35 hover:bg-[#CCFF00]/[0.045] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]"
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#CCFF00] shadow-[0_0_12px_rgba(204,255,0,0.75)]"></span>
+                <span>
+                  <span className="block text-sm font-bold tracking-[0.04em] text-white transition-colors group-hover:text-[#CCFF00]">
+                    {videosExpanded ? '收起动态影像' : '展开更多动态影像'}
+                  </span>
+                  <span className="mt-1 block font-mono text-[9px] tracking-[0.18em] text-white/35">
+                    {videosExpanded ? `ALL ${String(journalVideos.length).padStart(2, '0')} ITEMS` : `MORE ${String(journalVideos.length - VISIBLE_JOURNAL_VIDEOS).padStart(2, '0')} ITEMS`}
+                  </span>
+                </span>
+              </span>
+              <span className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-500 ${videosExpanded ? 'rotate-45 border-[#CCFF00]/55 bg-[#CCFF00] text-black' : 'border-white/20 bg-black/30 text-white group-hover:border-[#CCFF00]/55 group-hover:text-[#CCFF00]'}`} aria-hidden="true">
+                <span className="absolute h-px w-3 bg-current"></span>
+                <span className="absolute h-3 w-px bg-current"></span>
+              </span>
+            </button>
+
+            <div
+              id="visual-journal-more-videos"
+              className={`visual-journal-fold ${videosExpanded ? 'is-open' : ''}`}
+              aria-hidden={!videosExpanded}
+            >
+              <div className="visual-journal-fold__inner">
+                <div className="journal-fold-grid grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
+                  {journalVideos.slice(VISIBLE_JOURNAL_VIDEOS).map((item, index) => {
+                    const actualIndex = index + VISIBLE_JOURNAL_VIDEOS;
+                    return (
+                      <BorderGlow
+                        key={item.video}
+                        className="journal-fold-card cinematic-card aspect-video"
+                        edgeSensitivity={34}
+                        glowColor="78 100 63"
+                        backgroundColor="#050506"
+                        borderRadius={24}
+                        glowRadius={26}
+                        glowIntensity={0.7}
+                        coneSpread={19}
+                        fillOpacity={0.22}
+                        colors={['#CCFF00', '#a855f7', '#38bdf8']}
+                      >
+                        <button
+                          type="button"
+                          tabIndex={videosExpanded ? 0 : -1}
+                          onClick={() => openJournalVideo(item)}
+                          aria-label={`放大播放视觉日志：${item.title}`}
+                          className="group relative h-full w-full overflow-hidden bg-black text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]"
+                        >
+                          <LazyPreviewVideo
+                            src={item.video}
+                            poster={item.poster}
+                            ariaLabel={`${item.title} 静音循环预览`}
+                            className="pointer-events-none"
+                          />
+                          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/85 via-black/5 to-black/20"></div>
+                          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-6 pointer-events-none">
+                            <div>
+                              <span className="font-mono text-[9px] tracking-[0.18em] text-[#CCFF00]">{String(actualIndex + 1).padStart(2, '0')} / VIDEO</span>
+                              <h3 className="mt-1 text-xl md:text-2xl font-black tracking-[-0.03em] text-white">{item.title}</h3>
+                            </div>
+                          </div>
+                        </button>
+                      </BorderGlow>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-12 md:mt-16 mb-5 flex items-center gap-4">
               <span className="font-mono text-[9px] tracking-[0.2em] text-white/45">STILL FRAMES / 静态摄影</span>
               <span className="h-px flex-1 bg-white/10"></span>
             </div>
 
             <div className={`cinematic-reveal-grid grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5 ${isVisible ? 'is-visible' : ''}`}>
-              {photoItems.map((item, index) => (
+              {photoItems.slice(0, VISIBLE_JOURNAL_PHOTOS).map((item, index) => (
                 <BorderGlow
                   key={item.media}
                   className={`cinematic-card ${item.layout}`}
@@ -3563,7 +5199,7 @@
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-transparent"></div>
                     <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-6">
                       <div>
-                        <span className="font-mono text-[9px] tracking-[0.18em] text-[#CCFF00]">0{index + 1}</span>
+                        <span className="font-mono text-[9px] tracking-[0.18em] text-[#CCFF00]">{String(index + 1).padStart(2, '0')}</span>
                         <h3 className="mt-1 text-xl md:text-2xl font-black tracking-[-0.03em] text-white">{item.title}</h3>
                       </div>
                       <span className="hidden sm:block font-mono text-[9px] tracking-[0.14em] text-white/45">{item.subtitle}</span>
@@ -3571,6 +5207,84 @@
                   </button>
                 </BorderGlow>
               ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setPhotosExpanded(value => !value)}
+              aria-expanded={photosExpanded}
+              aria-controls="visual-journal-more-photos"
+              className="group mt-5 flex w-full items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.035] px-5 py-4 text-left transition-all duration-500 hover:border-[#CCFF00]/35 hover:bg-[#CCFF00]/[0.045] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]"
+            >
+              <span className="flex min-w-0 items-center gap-3">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#CCFF00] shadow-[0_0_12px_rgba(204,255,0,0.75)]"></span>
+                <span>
+                  <span className="block text-sm font-bold tracking-[0.04em] text-white transition-colors group-hover:text-[#CCFF00]">
+                    {photosExpanded ? '收起摄影作品' : '展开更多摄影作品'}
+                  </span>
+                  <span className="mt-1 block font-mono text-[9px] tracking-[0.18em] text-white/35">
+                    {photosExpanded ? `ALL ${String(photoItems.length).padStart(2, '0')} ITEMS` : `MORE ${String(photoItems.length - VISIBLE_JOURNAL_PHOTOS).padStart(2, '0')} ITEMS`}
+                  </span>
+                </span>
+              </span>
+              <span className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-all duration-500 ${photosExpanded ? 'rotate-45 border-[#CCFF00]/55 bg-[#CCFF00] text-black' : 'border-white/20 bg-black/30 text-white group-hover:border-[#CCFF00]/55 group-hover:text-[#CCFF00]'}`} aria-hidden="true">
+                <span className="absolute h-px w-3 bg-current"></span>
+                <span className="absolute h-3 w-px bg-current"></span>
+              </span>
+            </button>
+
+            <div
+              id="visual-journal-more-photos"
+              className={`visual-journal-fold ${photosExpanded ? 'is-open' : ''}`}
+              aria-hidden={!photosExpanded}
+            >
+              <div className="visual-journal-fold__inner">
+                <div className="journal-fold-grid grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-5">
+                  {photoItems.slice(VISIBLE_JOURNAL_PHOTOS).map((item, index) => {
+                    const actualIndex = index + VISIBLE_JOURNAL_PHOTOS;
+                    return (
+                      <BorderGlow
+                        key={item.media}
+                        className={`journal-fold-card cinematic-card ${item.layout}`}
+                        edgeSensitivity={36}
+                        glowColor="268 88 72"
+                        backgroundColor="#050506"
+                        borderRadius={24}
+                        glowRadius={24}
+                        glowIntensity={0.62}
+                        coneSpread={18}
+                        fillOpacity={0.18}
+                        colors={['#a855f7', '#CCFF00', '#38bdf8']}
+                      >
+                        <button
+                          type="button"
+                          tabIndex={photosExpanded ? 0 : -1}
+                          onClick={() => openPhoto(item)}
+                          aria-label={`放大查看摄影作品：${item.title}`}
+                          className="group relative h-full w-full overflow-hidden bg-black text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00]"
+                        >
+                          <img
+                            src={item.media}
+                            alt={item.title}
+                            loading="lazy"
+                            decoding="async"
+                            className={`absolute -inset-px h-[calc(100%+2px)] w-[calc(100%+2px)] max-w-none object-cover object-center transition-transform duration-700 ease-out ${item.imageClass || 'scale-100 group-hover:scale-[1.035]'}`}
+                            style={{ objectFit: 'cover', objectPosition: 'center' }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-transparent"></div>
+                          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5 md:p-6">
+                            <div>
+                              <span className="font-mono text-[9px] tracking-[0.18em] text-[#CCFF00]">{String(actualIndex + 1).padStart(2, '0')}</span>
+                              <h3 className="mt-1 text-xl md:text-2xl font-black tracking-[-0.03em] text-white">{item.title}</h3>
+                            </div>
+                            <span className="hidden sm:block font-mono text-[9px] tracking-[0.14em] text-white/45">{item.subtitle}</span>
+                          </div>
+                        </button>
+                      </BorderGlow>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           </div>
           {lightboxItem && <ImageLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />}
@@ -5798,8 +7512,8 @@
       const autoPlayEnabled = true;
 
       return (
-        <section
-          id="circular"
+        <section 
+          id="circular" 
           className="w-full h-screen min-h-[700px] bg-black border-t border-purple-500/20 relative z-10 overflow-hidden isolate"
         >
           {/* Centered editorial heading above the circular work cards */}
@@ -5820,15 +7534,11 @@
 
           {/* Full Page Canvas Container without outer frame */}
           <div className="w-full h-full relative">
-            <PlasmaWave
-              colors={['#A855F7', '#06B6D4']}
-              speed1={0.05}
-              speed2={0.05}
-              dir2={1}
-              focalLength={0.8}
-              bend1={1}
-              bend2={0.5}
-              rotationDeg={0}
+            <Aurora
+              colorStops={['#7cff67', '#B497CF', '#5227FF']}
+              blend={0.5}
+              amplitude={1}
+              speed={0.5}
             />
             <div className="absolute inset-0 z-[1] bg-black/24 pointer-events-none"></div>
             <div className="absolute inset-0 z-[2]">
@@ -6360,6 +8070,7 @@
       useEffect(() => {
         const canvas = canvasRef.current, host = canvas?.parentElement;
         if (!canvas || !host) return;
+        const pointerSurface = host.parentElement || host;
         const gl = canvas.getContext('webgl', { alpha: true, antialias: false, premultipliedAlpha: true, powerPreference: 'high-performance' });
         if (!gl) return;
         const vs = `attribute vec2 p;varying vec2 vUv;void main(){vUv=p*.5+.5;gl_Position=vec4(p,0.,1.);}`;
@@ -6377,12 +8088,12 @@
         const rgb=hex=>{let h=hex.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return[((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255];};const palette=colors.filter(Boolean).slice(0,8).flatMap(rgb);while(palette.length<24)palette.push(0,0,0);
         const target={x:0,y:0},current={x:0,y:0},mobile=matchMedia('(max-width:768px)').matches,reduced=matchMedia('(prefers-reduced-motion:reduce)').matches,dpr=mobile?.7:Math.min(1.25,devicePixelRatio||1),interval=1000/(mobile?24:30),start=performance.now();let raf=0,last=0,visible=true;
         const resize=()=>{const w=Math.max(1,Math.round(host.clientWidth*dpr)),h=Math.max(1,Math.round(host.clientHeight*dpr));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}};
-        const move=e=>{const r=host.getBoundingClientRect();target.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;target.y=-(((e.clientY-r.top)/Math.max(1,r.height))*2-1);};
+        const move=e=>{if(mobile||(e.pointerType&&e.pointerType!=='mouse'))return;const r=pointerSurface.getBoundingClientRect();target.x=((e.clientX-r.left)/Math.max(1,r.width))*2-1;target.y=-(((e.clientY-r.top)/Math.max(1,r.height))*2-1);};
         const draw=now=>{if(!visible||document.hidden)return;if(!reduced&&now-last<interval){raf=requestAnimationFrame(draw);return;}last=now;resize();const t=(now-start)/1000,a=rotation*Math.PI/180;current.x+=(target.x-current.x)*.12;current.y+=(target.y-current.y)*.12;gl.clearColor(0,0,0,transparent?0:1);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(program);gl.uniform2f(U.canvas,canvas.width,canvas.height);gl.uniform2f(U.rot,Math.cos(a),Math.sin(a));gl.uniform2f(U.pointer,current.x,current.y);gl.uniform1f(U.time,reduced?0:t);gl.uniform1f(U.speed,speed);gl.uniform1f(U.scale,scale);gl.uniform1f(U.freq,frequency);gl.uniform1f(U.warp,warpStrength);gl.uniform1f(U.mouse,mouseInfluence);gl.uniform1f(U.parallax,parallax);gl.uniform1f(U.noise,noise);gl.uniform1f(U.intensity,intensity);gl.uniform1f(U.band,bandWidth);gl.uniform1i(U.count,Math.min(colors.length,8));gl.uniform1i(U.transparent,transparent?1:0);gl.uniform1i(U.iterations,Math.max(1,Math.min(5,iterations)));gl.uniform3fv(U.colors,new Float32Array(palette));gl.drawArrays(gl.TRIANGLES,0,6);if(!reduced)raf=requestAnimationFrame(draw);};
         const observer=new IntersectionObserver(([e])=>{visible=e.isIntersecting;cancelAnimationFrame(raf);if(visible&&!document.hidden)raf=requestAnimationFrame(draw);},{threshold:.02});
         const handleVisibility=()=>{cancelAnimationFrame(raf);if(!document.hidden&&visible)raf=requestAnimationFrame(draw);};
-        observer.observe(host);host.addEventListener('pointermove',move,{passive:true});window.addEventListener('resize',resize,{passive:true});document.addEventListener('visibilitychange',handleVisibility);resize();raf=requestAnimationFrame(draw);
-        return()=>{cancelAnimationFrame(raf);observer.disconnect();host.removeEventListener('pointermove',move);window.removeEventListener('resize',resize);document.removeEventListener('visibilitychange',handleVisibility);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vert);gl.deleteShader(frag);};
+        observer.observe(host);pointerSurface.addEventListener('pointermove',move,{passive:true});window.addEventListener('resize',resize,{passive:true});document.addEventListener('visibilitychange',handleVisibility);resize();raf=requestAnimationFrame(draw);
+        return()=>{cancelAnimationFrame(raf);observer.disconnect();pointerSurface.removeEventListener('pointermove',move);window.removeEventListener('resize',resize);document.removeEventListener('visibilitychange',handleVisibility);gl.deleteBuffer(buffer);gl.deleteProgram(program);gl.deleteShader(vert);gl.deleteShader(frag);};
       }, [colors.join('|'), rotation, speed, scale, frequency, warpStrength, mouseInfluence, parallax, noise, iterations, intensity, bandWidth, transparent]);
       return <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-hidden="true" />;
     };
@@ -6550,7 +8261,7 @@
 
         gl_FragColor = vec4(col, o.a);
       }
-
+    
         `;
 
         const compileShader = (type, source) => {
@@ -6850,14 +8561,14 @@
 
         vec3 col = vec3(0.0);
         float t = 0.1;
-
+        
         for(int i = 0; i < MAX_ITER; i++) {
           vec3 p = ro + rd * t;
           p.xz = vec2(rotC * p.x - rotS * p.z, rotS * p.x + rotC * p.z);
 
           vec3 q = p;
           q.y = p.y * uPillarHeight + uTime;
-
+          
           float freq = 1.0;
           float amp = 1.0;
           for(int j = 0; j < WAVE_ITER; j++) {
@@ -6866,7 +8577,7 @@
             freq *= 2.0;
             amp *= 0.5;
           }
-
+          
           float d = length(cos(q.xz)) - 0.2;
           float bound = length(p.xz) - uPillarWidth;
           float k = 4.0;
@@ -6883,12 +8594,12 @@
 
         float widthNorm = uPillarWidth / 3.0;
         col = tanhCompat(col * uGlowAmount / widthNorm);
-
+        
         col -= fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) / 15.0 * uNoiseIntensity;
-
+        
         gl_FragColor = vec4(col * uIntensity, 1.0);
       }
-
+    
         `;
 
         const compileShader = (type, source) => {
@@ -7372,7 +9083,7 @@ void main(){
             >
               <div className="text-white p-8 md:p-12 flex flex-col gap-8">
                 <h3 className="font-mono text-xs text-[#CCFF00] tracking-widest uppercase">// 直接联系渠道</h3>
-
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
                   <div className="bg-black/80 border border-purple-500/30 p-4 rounded-xl flex flex-col items-center justify-center text-white aspect-square">
                       <div className="w-full h-full border border-purple-500/30 rounded-lg p-2 flex flex-col justify-center relative bg-black/90 text-white items-center shadow-inner">
@@ -7393,8 +9104,8 @@ void main(){
                       <div className="flex items-center gap-2 text-[#CCFF00] font-mono text-xs uppercase mb-1">
                         <Mail size={14} /> 电子邮箱
                       </div>
-                      <a
-                        href="mailto:3338566558@qq.com"
+                      <a 
+                        href="mailto:3338566558@qq.com" 
                         onClick={() => triggerToast("正在打开邮箱客户端")}
                         className="text-sm md:text-base font-bold tracking-tight text-white hover:text-[#CCFF00] hover:underline break-all transition-colors"
                       >
@@ -7431,34 +9142,21 @@ void main(){
     );
 
     const App = () => {
-      const [scrollY, setScrollY] = useState(0);
       const [audioMuted, setAudioMuted] = useState(true);
       const [activeModal, setActiveModal] = useState(null);
       const [toastMsg, setToastMsg] = useState(null);
       const [introComplete, setIntroComplete] = useState(false);
 
       useEffect(() => {
-        let frameId = 0;
         const previousScrollRestoration = 'scrollRestoration' in history ? history.scrollRestoration : null;
         if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         window.scrollTo(0, 0);
-        setScrollY(0);
-        const handleScroll = () => {
-          if (frameId) return;
-          frameId = requestAnimationFrame(() => {
-            frameId = 0;
-            setScrollY(window.scrollY);
-          });
-        };
         const handleVisibility = () => {
           document.documentElement.classList.toggle('page-is-hidden', document.hidden);
         };
-        window.addEventListener('scroll', handleScroll, { passive: true });
         document.addEventListener('visibilitychange', handleVisibility);
         handleVisibility();
         return () => {
-          cancelAnimationFrame(frameId);
-          window.removeEventListener('scroll', handleScroll);
           document.removeEventListener('visibilitychange', handleVisibility);
           document.documentElement.classList.remove('page-is-hidden');
           if (previousScrollRestoration) history.scrollRestoration = previousScrollRestoration;
@@ -7471,19 +9169,20 @@ void main(){
       };
 
       return (
-        <div className="min-h-screen bg-[#050308] text-white selection:bg-[#CCFF00] selection:text-black">
+        <div className="min-h-screen bg-[#050505] text-white selection:bg-[#CCFF00] selection:text-black">
           <GlobalStyles />
           <CinematicIntro onComplete={setIntroComplete} />
-
-          <Navbar
-            audioMuted={audioMuted}
-            setAudioMuted={setAudioMuted}
+          
+          <Navbar 
+            audioMuted={audioMuted} 
+            setAudioMuted={setAudioMuted} 
             triggerToast={triggerToast}
+            introComplete={introComplete}
           />
 
           <main>
-            <HeroSection scrollY={scrollY} triggerToast={triggerToast} introComplete={introComplete} />
-            <TextMarquee text="3D MOTION // VISUAL DIRECTION // AIGC EXPERIMENTS // CINEMATOGRAPHY // EDITING // DESIGN" />
+            <Hero introComplete={introComplete} />
+            <MarqueeText />
             <CircularGallerySection />
             <ProjectsSection setActiveModal={setActiveModal} />
             <MotionSection setActiveModal={setActiveModal} />
@@ -7496,10 +9195,10 @@ void main(){
           <Footer />
 
           {activeModal && (
-            <Modal
-              data={activeModal}
-              onClose={() => setActiveModal(null)}
-              triggerToast={triggerToast}
+            <Modal 
+              data={activeModal} 
+              onClose={() => setActiveModal(null)} 
+              triggerToast={triggerToast} 
             />
           )}
 
