@@ -1700,6 +1700,16 @@
           user-select: text;
         }
 
+        .fold-text--gradient .fold-text__visual {
+          display: inline;
+          filter: drop-shadow(0 7px 24px var(--fold-text-glow, rgba(192, 132, 252, 0.12)));
+        }
+
+        .fold-text--gradient .fold-text__piece {
+          color: var(--fold-piece-color, var(--fold-text-color, currentColor));
+          -webkit-text-fill-color: var(--fold-piece-color, var(--fold-text-color, currentColor));
+        }
+
         .fold-text__sr-only {
           position: absolute;
           width: 1px;
@@ -3654,12 +3664,31 @@
       text,
       perspective = 700,
       color = '#CCFF00',
+      gradientColors = [],
+      gradientGlow = 'rgba(192, 132, 252, 0.12)',
       className = '',
       activationDelay = 0,
       enabled = true
     }) => {
       const rootRef = useRef(null);
       const [isActive, setIsActive] = useState(false);
+      const hasGradient = gradientColors.length > 1;
+
+      const getGradientColor = index => {
+        if (!hasGradient) return color;
+        const safeLength = Math.max(text.length - 1, 1);
+        const scaledProgress = (index / safeLength) * (gradientColors.length - 1);
+        const stopIndex = Math.min(Math.floor(scaledProgress), gradientColors.length - 2);
+        const mix = scaledProgress - stopIndex;
+        const parseHex = hex => {
+          const normalized = hex.replace('#', '');
+          return [0, 2, 4].map(offset => parseInt(normalized.slice(offset, offset + 2), 16));
+        };
+        const start = parseHex(gradientColors[stopIndex]);
+        const end = parseHex(gradientColors[stopIndex + 1]);
+        const mixed = start.map((channel, channelIndex) => Math.round(channel + (end[channelIndex] - channel) * mix));
+        return `rgb(${mixed.join(', ')})`;
+      };
 
       useEffect(() => {
         const root = rootRef.current;
@@ -3689,8 +3718,12 @@
       return (
         <span
           ref={rootRef}
-          className={`fold-text ${isActive ? 'is-active' : ''} ${className}`.trim()}
-          style={{ '--fold-perspective': `${perspective}px`, '--fold-text-color': color }}
+          className={`fold-text ${hasGradient ? 'fold-text--gradient' : ''} ${isActive ? 'is-active' : ''} ${className}`.trim()}
+          style={{
+            '--fold-perspective': `${perspective}px`,
+            '--fold-text-color': color,
+            '--fold-text-glow': gradientGlow
+          }}
         >
           <span className="fold-text__sr-only">{text}</span>
           <span className="fold-text__visual" aria-hidden="true">
@@ -3699,7 +3732,10 @@
                 ? <br key={`br-${index}`} />
                 : (
                   <span className="fold-text__segment" key={`${char}-${index}`}>
-                    <span className="fold-text__piece" style={{ '--fold-index': index }}>
+                    <span
+                      className="fold-text__piece"
+                      style={{ '--fold-index': index, '--fold-piece-color': getGradientColor(index) }}
+                    >
                       {char === ' ' ? '\u00A0' : char}
                     </span>
                   </span>
@@ -7757,8 +7793,20 @@ void main() {
                 01 · VIDEO EDITOR · MOTION DESIGNER · AIGC CREATOR
               </span>
               <h2 className="mt-4 md:mt-5 text-[clamp(2.15rem,5.1vw,5.7rem)] font-black leading-[0.88] tracking-[-0.065em] text-white">
-                <FoldText text="CRAFTING" perspective={700} color="#ffffff" /><br />
-                <FoldText text="CINEMATIC EXPERIENCES" perspective={700} color="#f0abfc" />
+                <FoldText
+                  text="CRAFTING"
+                  perspective={700}
+                  color="#ffffff"
+                  gradientColors={['#ffffff', '#f8f7ff', '#e9ddff', '#c4b5fd']}
+                  gradientGlow="rgba(216, 180, 254, 0.1)"
+                /><br />
+                <FoldText
+                  text="CINEMATIC EXPERIENCES"
+                  perspective={700}
+                  color="#f0abfc"
+                  gradientColors={['#f4ffd6', '#f5d0fe', '#f0abfc', '#c084fc', '#7dd3fc']}
+                  gradientGlow="rgba(192, 132, 252, 0.18)"
+                />
               </h2>
               <p className="mx-auto mt-4 md:mt-5 max-w-2xl text-xs md:text-sm leading-relaxed tracking-[0.08em] text-white/55">
                 以剪辑、动态设计与 AI 影像，构建更具情绪、节奏与想象力的视觉叙事。
