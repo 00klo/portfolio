@@ -59,7 +59,8 @@
       useRef,
       useEffect,
       useMemo,
-      useCallback
+      useCallback,
+      useId
     } = React;
 
     // --- STREAMING_CHUNK:Defining Global Styles and Keyframes... ---
@@ -127,7 +128,7 @@
           font-size: clamp(2.2rem, 5.3vw, 4.8rem);
           font-weight: 900;
           line-height: 0.9;
-          letter-spacing: -0.075em;
+          letter-spacing: -0.02em;
           text-transform: uppercase;
           -webkit-text-fill-color: currentColor;
         }
@@ -1018,6 +1019,105 @@
           animation: textTypeCursorBlink 0.7s ease-in-out infinite alternate;
         }
 
+        .glass-surface {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          isolation: isolate;
+          transition: opacity 0.26s ease-out;
+        }
+
+        .glass-surface__filter {
+          position: absolute;
+          inset: 0;
+          z-index: -1;
+          width: 100%;
+          height: 100%;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .glass-surface__content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          width: 100%;
+          height: 100%;
+          align-items: center;
+          justify-content: center;
+          padding: 0.5rem;
+          border-radius: inherit;
+        }
+
+        .glass-surface--svg {
+          background: rgba(7, 7, 11, var(--glass-frost, 0.16));
+          -webkit-backdrop-filter: blur(22px) saturate(var(--glass-saturation, 1.45)) brightness(1.06);
+          backdrop-filter: var(--filter-id) saturate(var(--glass-saturation, 1.45)) brightness(1.06);
+        }
+
+        .glass-surface--fallback {
+          background: rgba(7, 7, 11, 0.52);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          -webkit-backdrop-filter: blur(22px) saturate(1.22) brightness(1.05);
+          backdrop-filter: blur(22px) saturate(1.22) brightness(1.05);
+        }
+
+        @supports not (backdrop-filter: blur(10px)) {
+          .glass-surface--fallback {
+            background: rgba(9, 8, 14, 0.82);
+          }
+        }
+
+        .premium-nav__glass {
+          width: 100%;
+          height: 100%;
+          background:
+            linear-gradient(118deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.025) 28%, transparent 48%),
+            linear-gradient(300deg, rgba(235, 242, 255, 0.04), transparent 38%),
+            rgba(7, 7, 11, 0.42);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.07),
+            inset 0 0 24px rgba(255, 255, 255, 0.035),
+            0 18px 54px rgba(0, 0, 0, 0.42),
+            0 4px 18px rgba(0, 0, 0, 0.24);
+        }
+
+        .premium-nav__glass::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 0;
+          border-radius: inherit;
+          background:
+            radial-gradient(circle at 13% -20%, rgba(255, 255, 255, 0.38), transparent 31%),
+            linear-gradient(100deg, transparent 58%, rgba(255, 255, 255, 0.025) 78%, rgba(235, 242, 255, 0.045));
+          opacity: 0.82;
+          pointer-events: none;
+        }
+
+        .premium-nav__glass.glass-surface--fallback {
+          background:
+            linear-gradient(118deg, rgba(255, 255, 255, 0.13), transparent 31%),
+            linear-gradient(300deg, rgba(235, 242, 255, 0.035), transparent 42%),
+            rgba(7, 7, 11, 0.64);
+        }
+
+        .premium-nav__glass .glass-surface__content {
+          padding: 0;
+          align-items: stretch;
+          justify-content: stretch;
+        }
+
+        .premium-nav__content {
+          width: 100%;
+          height: 100%;
+          border-radius: inherit;
+        }
+
         .specular-nav {
           --specular-x: 50%;
           --specular-y: 0%;
@@ -1038,14 +1138,14 @@
         }
 
         .specular-nav::before {
-          z-index: 2;
+          z-index: 4;
           padding: 1px;
           background:
             radial-gradient(
               circle 120px at var(--specular-x) var(--specular-y),
-              rgba(255, 255, 255, 0.98) 0%,
-              rgba(204, 255, 0, 0.72) 18%,
-              rgba(125, 211, 252, 0.28) 42%,
+              rgba(255, 255, 255, 0.92) 0%,
+              rgba(235, 242, 255, 0.34) 22%,
+              rgba(255, 255, 255, 0.1) 46%,
               transparent 72%
             );
           -webkit-mask:
@@ -1054,7 +1154,7 @@
           -webkit-mask-composite: xor;
           mask-composite: exclude;
           opacity: var(--specular-opacity);
-          filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.32));
+          filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.18));
         }
 
         .specular-nav::after {
@@ -1062,8 +1162,8 @@
           inset: -10px;
           background: radial-gradient(
             circle 105px at var(--specular-x) var(--specular-y),
-            rgba(255, 255, 255, 0.12),
-            rgba(204, 255, 0, 0.055) 34%,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.04) 34%,
             transparent 70%
           );
           opacity: calc(var(--specular-opacity) * 0.82);
@@ -1083,21 +1183,13 @@
 
         .premium-nav {
           min-height: 60px;
+          height: 60px;
           pointer-events: auto;
-          background:
-            linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 34%),
-            rgba(5, 5, 5, 0.68);
-          border: 1px solid rgba(157, 104, 255, 0.3);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.055),
-            0 18px 52px rgba(0, 0, 0, 0.46);
           opacity: 0;
           transform: translate3d(0, -18px, 0) scale(0.985);
           transition:
             opacity 0.72s 0.08s cubic-bezier(0.16, 1, 0.3, 1),
-            transform 0.82s 0.08s cubic-bezier(0.16, 1, 0.3, 1),
-            border-color 0.28s ease,
-            box-shadow 0.28s ease;
+            transform 0.82s 0.08s cubic-bezier(0.16, 1, 0.3, 1);
           will-change: opacity, transform;
         }
 
@@ -1234,6 +1326,7 @@
 
         .premium-hero__title-line--lin {
           color: #f5f5f2;
+          letter-spacing: -0.018em;
           text-shadow: 0 12px 42px rgba(0, 0, 0, 0.38);
         }
 
@@ -1576,7 +1669,12 @@
 
           .premium-nav {
             min-height: 54px;
-            padding: 0.5rem 0.65rem;
+            height: 54px;
+          }
+
+          .premium-nav__glass.glass-surface--svg {
+            -webkit-backdrop-filter: blur(18px) saturate(1.18) brightness(1.04);
+            backdrop-filter: blur(18px) saturate(1.18) brightness(1.04);
           }
 
           .premium-nav__brand {
@@ -1752,6 +1850,15 @@
           animation-delay: calc(0.24s + var(--fold-index) * 0.055s);
         }
 
+        .fold-text--flowing-gradient.is-active .fold-text__piece {
+          animation:
+            foldTextUnfold 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards,
+            foldTextGradientFlow var(--fold-gradient-duration, 8s) linear infinite;
+          animation-delay:
+            calc(0.24s + var(--fold-index) * 0.055s),
+            calc(var(--fold-index) * -0.18s);
+        }
+
         .fold-text__piece::after {
           content: '';
           position: absolute;
@@ -1775,6 +1882,25 @@
           100% { opacity: 1; transform: rotateX(0deg) translateY(0); }
         }
 
+        @keyframes foldTextGradientFlow {
+          0%, 100% {
+            color: var(--fold-gradient-a);
+            -webkit-text-fill-color: var(--fold-gradient-a);
+          }
+          25% {
+            color: var(--fold-gradient-b);
+            -webkit-text-fill-color: var(--fold-gradient-b);
+          }
+          50% {
+            color: var(--fold-gradient-c);
+            -webkit-text-fill-color: var(--fold-gradient-c);
+          }
+          75% {
+            color: var(--fold-gradient-d);
+            -webkit-text-fill-color: var(--fold-gradient-d);
+          }
+        }
+
         @keyframes foldTextCrease {
           0% { opacity: 0.55; }
           65% { opacity: 0.12; }
@@ -1788,6 +1914,11 @@
 
         @media (prefers-reduced-motion: reduce) {
           .text-type__cursor { animation: none; }
+
+          .premium-nav__glass.glass-surface--svg {
+            -webkit-backdrop-filter: blur(20px) saturate(1.18) brightness(1.04);
+            backdrop-filter: blur(20px) saturate(1.18) brightness(1.04);
+          }
 
           .premium-nav,
           .premium-nav.is-ready,
@@ -3307,6 +3438,163 @@
       );
     };
 
+    const GlassSurface = ({
+      children,
+      width = 200,
+      height = 80,
+      borderRadius = 20,
+      borderWidth = 0.07,
+      brightness = 50,
+      opacity = 0.93,
+      blur = 11,
+      displace = 0,
+      backgroundOpacity = 0,
+      saturation = 1,
+      distortionScale = -180,
+      redOffset = 0,
+      greenOffset = 10,
+      blueOffset = 20,
+      xChannel = 'R',
+      yChannel = 'G',
+      mixBlendMode = 'difference',
+      className = '',
+      style = {}
+    }) => {
+      const uniqueId = useId().replace(/:/g, '-');
+      const filterId = `glass-filter-${uniqueId}`;
+      const redGradId = `red-grad-${uniqueId}`;
+      const blueGradId = `blue-grad-${uniqueId}`;
+      const [svgSupported, setSvgSupported] = useState(false);
+      const containerRef = useRef(null);
+      const feImageRef = useRef(null);
+      const redChannelRef = useRef(null);
+      const greenChannelRef = useRef(null);
+      const blueChannelRef = useRef(null);
+      const gaussianBlurRef = useRef(null);
+
+      const supportsSVGFilters = () => {
+        if (typeof window === 'undefined' || typeof document === 'undefined') return false;
+        const isWebkit = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+        const isFirefox = /Firefox/.test(navigator.userAgent);
+        if (isWebkit || isFirefox) return false;
+        const probe = document.createElement('div');
+        probe.style.backdropFilter = `url(#${filterId})`;
+        return probe.style.backdropFilter !== '';
+      };
+
+      const generateDisplacementMap = () => {
+        const rect = containerRef.current?.getBoundingClientRect();
+        const actualWidth = Math.max(1, Math.round(rect?.width || 400));
+        const actualHeight = Math.max(1, Math.round(rect?.height || 80));
+        const edgeSize = Math.min(actualWidth, actualHeight) * (borderWidth * 0.5);
+        const svgContent = `
+          <svg viewBox="0 0 ${actualWidth} ${actualHeight}" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="${redGradId}" x1="100%" y1="0%" x2="0%" y2="0%">
+                <stop offset="0%" stop-color="#0000"/>
+                <stop offset="100%" stop-color="red"/>
+              </linearGradient>
+              <linearGradient id="${blueGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#0000"/>
+                <stop offset="100%" stop-color="blue"/>
+              </linearGradient>
+            </defs>
+            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" fill="black"/>
+            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${borderRadius}" fill="url(#${redGradId})"/>
+            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${borderRadius}" fill="url(#${blueGradId})" style="mix-blend-mode:${mixBlendMode}"/>
+            <rect x="${edgeSize}" y="${edgeSize}" width="${Math.max(1, actualWidth - edgeSize * 2)}" height="${Math.max(1, actualHeight - edgeSize * 2)}" rx="${borderRadius}" fill="hsl(0 0% ${brightness}% / ${opacity})" style="filter:blur(${blur}px)"/>
+          </svg>
+        `;
+        return `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
+      };
+
+      const updateDisplacementMap = () => {
+        feImageRef.current?.setAttribute('href', generateDisplacementMap());
+      };
+
+      useEffect(() => {
+        updateDisplacementMap();
+        [
+          { ref: redChannelRef, offset: redOffset },
+          { ref: greenChannelRef, offset: greenOffset },
+          { ref: blueChannelRef, offset: blueOffset }
+        ].forEach(({ ref, offset }) => {
+          if (!ref.current) return;
+          ref.current.setAttribute('scale', String(distortionScale + offset));
+          ref.current.setAttribute('xChannelSelector', xChannel);
+          ref.current.setAttribute('yChannelSelector', yChannel);
+        });
+        gaussianBlurRef.current?.setAttribute('stdDeviation', String(displace));
+      }, [
+        width,
+        height,
+        borderRadius,
+        borderWidth,
+        brightness,
+        opacity,
+        blur,
+        displace,
+        distortionScale,
+        redOffset,
+        greenOffset,
+        blueOffset,
+        xChannel,
+        yChannel,
+        mixBlendMode
+      ]);
+
+      useEffect(() => {
+        const container = containerRef.current;
+        if (!container || typeof ResizeObserver === 'undefined') return;
+        const resizeObserver = new ResizeObserver(() => updateDisplacementMap());
+        resizeObserver.observe(container);
+        return () => resizeObserver.disconnect();
+      }, []);
+
+      useEffect(() => {
+        const timer = window.setTimeout(updateDisplacementMap, 0);
+        return () => window.clearTimeout(timer);
+      }, [width, height]);
+
+      useEffect(() => setSvgSupported(supportsSVGFilters()), []);
+
+      const containerStyle = {
+        ...style,
+        width: typeof width === 'number' ? `${width}px` : width,
+        height: typeof height === 'number' ? `${height}px` : height,
+        borderRadius: `${borderRadius}px`,
+        '--glass-frost': backgroundOpacity,
+        '--glass-saturation': saturation,
+        '--filter-id': `url(#${filterId})`
+      };
+
+      return (
+        <div
+          ref={containerRef}
+          className={`glass-surface ${svgSupported ? 'glass-surface--svg' : 'glass-surface--fallback'} ${className}`.trim()}
+          style={containerStyle}
+        >
+          <svg className="glass-surface__filter" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <filter id={filterId} colorInterpolationFilters="sRGB" x="0%" y="0%" width="100%" height="100%">
+                <feImage ref={feImageRef} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
+                <feDisplacementMap ref={redChannelRef} in="SourceGraphic" in2="map" result="dispRed" />
+                <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
+                <feDisplacementMap ref={greenChannelRef} in="SourceGraphic" in2="map" result="dispGreen" />
+                <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
+                <feDisplacementMap ref={blueChannelRef} in="SourceGraphic" in2="map" result="dispBlue" />
+                <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
+                <feBlend in="red" in2="green" mode="screen" result="rg" />
+                <feBlend in="rg" in2="blue" mode="screen" result="output" />
+                <feGaussianBlur ref={gaussianBlurRef} in="output" stdDeviation="0.7" />
+              </filter>
+            </defs>
+          </svg>
+          <div className="glass-surface__content">{children}</div>
+        </div>
+      );
+    };
+
     const Button = ({ href, onClick, children, className = '', size = 'hero', ariaLabel }) => (
       <a
         href={href}
@@ -3380,65 +3668,86 @@
 
       return (
         <nav className="premium-nav-shell fixed left-0 right-0 z-50 flex justify-center" aria-label="主导航">
-          <div ref={navRef} className={`specular-nav premium-nav ${introComplete ? 'is-ready' : ''} flex w-full max-w-[1440px] items-center justify-between rounded-full px-4 py-2 backdrop-blur-2xl lg:px-6`}>
-            <button
-              type="button"
-              className="premium-nav__brand cursor-pointer"
-              aria-label="返回首页顶部"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          <div ref={navRef} className={`specular-nav premium-nav ${introComplete ? 'is-ready' : ''} flex w-full max-w-[1440px] rounded-full`}>
+            <GlassSurface
+              width="100%"
+              height="100%"
+              borderRadius={999}
+              borderWidth={0.12}
+              brightness={68}
+              opacity={0.74}
+              blur={12}
+              displace={0.3}
+              backgroundOpacity={0.16}
+              saturation={1.18}
+              distortionScale={-62}
+              redOffset={0}
+              greenOffset={1}
+              blueOffset={2}
+              mixBlendMode="screen"
+              className="premium-nav__glass"
             >
-              <span className="premium-nav__brand-mark" aria-hidden="true">
-                <img
-                  src="./assets/profile/nav-avatar.webp"
-                  alt=""
-                  width="192"
-                  height="192"
-                  loading="eager"
-                  decoding="async"
-                  className="premium-nav__brand-avatar"
-                />
-              </span>
-              <span className="premium-nav__wordmark text-sm font-bold uppercase tracking-[0.16em]">LIN</span>
-            </button>
-
-            <div className="hidden items-center gap-3 font-mono uppercase text-gray-300 lg:flex xl:gap-6">
-              {navItems.map(item => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={event => scrollToSection(event, item.id)}
-                  className="group/nav flex flex-col items-center leading-none transition-colors duration-300 hover:text-[#CCFF00] focus:outline-none focus-visible:text-[#CCFF00]"
+              <div className="premium-nav__content flex items-center justify-between px-3 py-2 sm:px-4 lg:px-6">
+                <button
+                  type="button"
+                  className="premium-nav__brand cursor-pointer"
+                  aria-label="返回首页顶部"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 >
-                  <span className="text-[9px] font-bold tracking-[0.14em] xl:text-[10px]">{item.label}</span>
-                  <span className="mt-1 text-[8px] tracking-[0.12em] text-white/42 transition-colors group-hover/nav:text-[#CCFF00]/70">{item.secondary}</span>
-                </a>
-              ))}
-            </div>
+                  <span className="premium-nav__brand-mark" aria-hidden="true">
+                    <img
+                      src="./assets/profile/nav-avatar.webp"
+                      alt=""
+                      width="192"
+                      height="192"
+                      loading="eager"
+                      decoding="async"
+                      className="premium-nav__brand-avatar"
+                    />
+                  </span>
+                  <span className="premium-nav__wordmark text-sm font-bold uppercase tracking-[0.16em]">LIN</span>
+                </button>
 
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setAudioMuted(!audioMuted);
-                  triggerToast(audioMuted ? "环境音效已开启" : "环境音效已静音");
-                }}
-                aria-label={audioMuted ? '开启环境音效' : '关闭环境音效'}
-                aria-pressed={!audioMuted}
-                className="premium-nav__sound flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/[0.18] bg-white/[0.07] text-white hover:bg-[#CCFF00] hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                title="切换环境音频"
-              >
-                {audioMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-              </button>
+                <div className="hidden items-center gap-3 font-mono uppercase text-gray-300 lg:flex xl:gap-6">
+                  {navItems.map(item => (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={event => scrollToSection(event, item.id)}
+                      className="group/nav flex flex-col items-center leading-none transition-colors duration-300 hover:text-[#CCFF00] focus:outline-none focus-visible:text-[#CCFF00]"
+                    >
+                      <span className="text-[9px] font-bold tracking-[0.14em] xl:text-[10px]">{item.label}</span>
+                      <span className="mt-1 text-[8px] tracking-[0.12em] text-white/42 transition-colors group-hover/nav:text-[#CCFF00]/70">{item.secondary}</span>
+                    </a>
+                  ))}
+                </div>
 
-              <Button
-                href="#contact"
-                onClick={event => scrollToSection(event, 'contact')}
-                size="nav"
-                ariaLabel="联系 LIN YANG"
-              >
-                联系我
-              </Button>
-            </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAudioMuted(!audioMuted);
+                      triggerToast(audioMuted ? "环境音效已开启" : "环境音效已静音");
+                    }}
+                    aria-label={audioMuted ? '开启环境音效' : '关闭环境音效'}
+                    aria-pressed={!audioMuted}
+                    className="premium-nav__sound flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/[0.18] bg-white/[0.07] text-white hover:bg-[#CCFF00] hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                    title="切换环境音频"
+                  >
+                    {audioMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+                  </button>
+
+                  <Button
+                    href="#contact"
+                    onClick={event => scrollToSection(event, 'contact')}
+                    size="nav"
+                    ariaLabel="联系 LIN YANG"
+                  >
+                    联系我
+                  </Button>
+                </div>
+              </div>
+            </GlassSurface>
           </div>
         </nav>
       );
@@ -3666,6 +3975,8 @@
       color = '#CCFF00',
       gradientColors = [],
       gradientGlow = 'rgba(192, 132, 252, 0.12)',
+      flowingGradient = false,
+      gradientDuration = 8,
       className = '',
       activationDelay = 0,
       enabled = true
@@ -3673,6 +3984,11 @@
       const rootRef = useRef(null);
       const [isActive, setIsActive] = useState(false);
       const hasGradient = gradientColors.length > 1;
+      const getGradientStop = progress => (
+        hasGradient
+          ? gradientColors[Math.round((gradientColors.length - 1) * progress)]
+          : color
+      );
 
       const getGradientColor = index => {
         if (!hasGradient) return color;
@@ -3718,11 +4034,16 @@
       return (
         <span
           ref={rootRef}
-          className={`fold-text ${hasGradient ? 'fold-text--gradient' : ''} ${isActive ? 'is-active' : ''} ${className}`.trim()}
+          className={`fold-text ${hasGradient ? 'fold-text--gradient' : ''} ${flowingGradient && hasGradient ? 'fold-text--flowing-gradient' : ''} ${isActive ? 'is-active' : ''} ${className}`.trim()}
           style={{
             '--fold-perspective': `${perspective}px`,
             '--fold-text-color': color,
-            '--fold-text-glow': gradientGlow
+            '--fold-text-glow': gradientGlow,
+            '--fold-gradient-a': getGradientStop(0),
+            '--fold-gradient-b': getGradientStop(0.33),
+            '--fold-gradient-c': getGradientStop(0.66),
+            '--fold-gradient-d': getGradientStop(1),
+            '--fold-gradient-duration': `${gradientDuration}s`
           }}
         >
           <span className="fold-text__sr-only">{text}</span>
@@ -4305,6 +4626,8 @@ void main() {
       const trackRef = useRef(null);
       const cardRefs = useRef([]);
       const scrollFrameRef = useRef(0);
+      const programmaticMotionIndexRef = useRef(null);
+      const motionScrollSettleTimerRef = useRef(0);
       const navRef = useRef(null);
       const navDragRef = useRef(false);
       const motionItems = [
@@ -4321,12 +4644,45 @@ void main() {
         { type: 'EDITORIAL VIDEO // 11', title: '街口菜市场视觉记录', desc: '以市井色彩、生活细节和编辑排版构成在地观察影像。', video: './assets/motion-preview/motion-added-07.mp4', poster: './assets/motion-preview/motion-added-07-poster.jpg', ratio: 842 / 1190, orientation: 'portrait' },
       ];
 
-      useEffect(() => () => cancelAnimationFrame(scrollFrameRef.current), []);
+      useEffect(() => () => {
+        cancelAnimationFrame(scrollFrameRef.current);
+        window.clearTimeout(motionScrollSettleTimerRef.current);
+      }, []);
+
+      const syncMotionCardFromScroll = () => {
+        const track = trackRef.current;
+        if (!track) return;
+        const trackCenter = track.getBoundingClientRect().left + track.clientWidth / 2;
+        let nearestIndex = 0;
+        let nearestDistance = Infinity;
+
+        cardRefs.current.forEach((card, index) => {
+          if (!card) return;
+          const rect = card.getBoundingClientRect();
+          const distance = Math.abs(rect.left + rect.width / 2 - trackCenter);
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestIndex = index;
+          }
+        });
+
+        setActiveIndex(currentIndex => nearestIndex === currentIndex ? currentIndex : nearestIndex);
+      };
+
+      const settleProgrammaticMotionScroll = (delay = 150) => {
+        window.clearTimeout(motionScrollSettleTimerRef.current);
+        motionScrollSettleTimerRef.current = window.setTimeout(() => {
+          programmaticMotionIndexRef.current = null;
+          syncMotionCardFromScroll();
+        }, delay);
+      };
 
       const focusMotionCard = (index, behavior = 'smooth') => {
         const track = trackRef.current;
         const card = cardRefs.current[index];
         if (!track || !card) return;
+        programmaticMotionIndexRef.current = index;
+        settleProgrammaticMotionScroll(900);
         setActiveIndex(index);
         const left = card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2;
         track.scrollTo({ left, behavior });
@@ -4336,23 +4692,11 @@ void main() {
         if (scrollFrameRef.current) return;
         scrollFrameRef.current = requestAnimationFrame(() => {
           scrollFrameRef.current = 0;
-          const track = trackRef.current;
-          if (!track) return;
-          const trackCenter = track.getBoundingClientRect().left + track.clientWidth / 2;
-          let nearestIndex = activeIndex;
-          let nearestDistance = Infinity;
-
-          cardRefs.current.forEach((card, index) => {
-            if (!card) return;
-            const rect = card.getBoundingClientRect();
-            const distance = Math.abs(rect.left + rect.width / 2 - trackCenter);
-            if (distance < nearestDistance) {
-              nearestDistance = distance;
-              nearestIndex = index;
-            }
-          });
-
-          if (nearestIndex !== activeIndex) setActiveIndex(nearestIndex);
+          if (programmaticMotionIndexRef.current !== null) {
+            settleProgrammaticMotionScroll();
+            return;
+          }
+          syncMotionCardFromScroll();
         });
       };
 
@@ -5325,9 +5669,19 @@ void main() {
                   <FoldText text="VISUAL JOURNAL" perspective={700} color="#ffffff" />
                 </h2>
               </div>
-              <p className="max-w-md text-xs md:text-sm leading-relaxed tracking-[0.08em] text-white/45 md:text-right">
-                动态影像、摄影与日常观察。<br />以轻量影像日志记录真实世界的时间与情绪。
-              </p>
+              <div className="max-w-md md:text-right">
+                <p className="text-xs md:text-sm leading-relaxed tracking-[0.08em] text-white/45">
+                  动态影像、摄影与日常观察。<br />以轻量影像日志记录真实世界的时间与情绪。
+                </p>
+                <div
+                  role="note"
+                  aria-label="视频画质说明"
+                  className="mt-3 flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-3 py-2 font-mono text-[10px] leading-relaxed tracking-[0.08em] text-white/55 md:ml-auto md:text-[11px]"
+                >
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#CCFF00]/80 shadow-[0_0_10px_rgba(204,255,0,0.45)]" aria-hidden="true"></span>
+                  <span>为保证浏览流畅度，网页视频已压缩，画质可能低于原片。</span>
+                </div>
+              </div>
             </div>
 
             <div className={`cinematic-reveal-grid grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 ${isVisible ? 'is-visible' : ''}`}>
@@ -7797,15 +8151,19 @@ void main() {
                   text="CRAFTING"
                   perspective={700}
                   color="#ffffff"
-                  gradientColors={['#ffffff', '#f8f7ff', '#e9ddff', '#c4b5fd']}
+                  gradientColors={['#ffffff', '#e9ddff', '#c4b5fd', '#f5d0fe']}
                   gradientGlow="rgba(216, 180, 254, 0.1)"
+                  flowingGradient
+                  gradientDuration={11}
                 /><br />
                 <FoldText
                   text="CINEMATIC EXPERIENCES"
                   perspective={700}
                   color="#f0abfc"
-                  gradientColors={['#f4ffd6', '#f5d0fe', '#f0abfc', '#c084fc', '#7dd3fc']}
+                  gradientColors={['#efffc6', '#f0abfc', '#a78bfa', '#7dd3fc']}
                   gradientGlow="rgba(192, 132, 252, 0.18)"
+                  flowingGradient
+                  gradientDuration={8.5}
                 />
               </h2>
               <p className="mx-auto mt-4 md:mt-5 max-w-2xl text-xs md:text-sm leading-relaxed tracking-[0.08em] text-white/55">
@@ -8242,7 +8600,7 @@ void main() {
                         className="relative h-full w-full object-contain object-bottom drop-shadow-[0_24px_36px_rgba(0,0,0,0.58)] transition-transform duration-700 ease-out group-hover:scale-[1.035]"
                       />
                     </div>
-                    <div className="absolute left-8 right-8 bottom-8 flex items-end justify-between border-t border-white/10 pt-5 [transform:translateZ(38px)]">
+                    <div className="absolute left-8 right-8 bottom-8 flex items-end justify-between pt-5 [transform:translateZ(38px)]">
                       <div>
                         <p className="text-2xl font-black tracking-[-0.04em]">LIN YANG</p>
                         <p className="font-mono text-[9px] tracking-[0.18em] uppercase text-white/45 mt-1">Editor · Designer · Creator</p>
