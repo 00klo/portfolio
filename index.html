@@ -635,7 +635,7 @@
 
       .ai-poster-ring-shell {
         --poster-card-width: clamp(210px, 62vw, 250px);
-        --poster-ring-radius: 600px;
+        --poster-ring-radius: 420px;
         position: relative;
         height: 430px;
         overflow: hidden;
@@ -1275,6 +1275,80 @@
           background: #050505;
         }
 
+        @keyframes premiumHeroMottoSweep {
+          0%, 3% {
+            opacity: 0;
+            x: -420px;
+          }
+          7% {
+            opacity: 0.16;
+            x: -220px;
+          }
+          14% {
+            opacity: 0.42;
+            x: 140px;
+          }
+          24% {
+            opacity: 0.24;
+            x: 645px;
+          }
+          31% {
+            opacity: 0;
+            x: 1000px;
+          }
+          31.01%, 100% {
+            opacity: 0;
+            x: 1000px;
+          }
+        }
+
+        .premium-hero__motto-bg {
+          position: absolute;
+          left: 50%;
+          top: 95%;
+          z-index: 3;
+          width: min(16vw, 250px);
+          aspect-ratio: 10 / 3;
+          pointer-events: none;
+          transform: translate(-50%, -50%);
+          opacity: 1;
+        }
+
+        .premium-hero__motto-svg {
+          display: block;
+          width: 100%;
+          height: 100%;
+          overflow: visible;
+        }
+
+        .premium-hero__motto-base {
+          fill: rgba(255, 255, 255, 0.06);
+          filter: blur(0.65px);
+        }
+
+        .premium-hero__motto-sweep {
+          opacity: 0;
+          x: -420px;
+          mix-blend-mode: screen;
+          filter:
+            blur(0.18px)
+            drop-shadow(0 0 6px rgba(255, 255, 255, 0.22))
+            drop-shadow(0 0 12px rgba(204, 255, 0, 0.16));
+          will-change: opacity, transform;
+        }
+
+        .premium-hero.is-ready .premium-hero__motto-sweep {
+          animation: premiumHeroMottoSweep 8.8s linear 0.55s infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .premium-hero.is-ready .premium-hero__motto-sweep {
+            animation: none;
+            opacity: 0.16;
+            x: 290px;
+          }
+        }
+
         .premium-hero__inner {
           position: relative;
           z-index: 10;
@@ -1291,6 +1365,7 @@
 
         .premium-hero__content {
           width: min(760px, 62vw);
+          transform: translate3d(0, clamp(-3.5rem, -6vh, -2.4rem), 0);
         }
 
         .premium-hero__eyebrow {
@@ -1306,54 +1381,182 @@
         }
 
         .premium-hero__eyebrow::before {
-          content: '';
-          width: clamp(1.7rem, 3vw, 2.8rem);
-          height: 1px;
-          flex: none;
-          background: #CCFF00;
-          box-shadow: 0 0 14px rgba(204, 255, 0, 0.32);
+          display: none;
         }
 
         .premium-hero__title {
-          margin: clamp(1.45rem, 2.6vh, 2rem) 0 0;
-          color: #f5f5f2;
+          position: relative;
+          isolation: isolate;
+          width: fit-content;
+          margin: clamp(1.7rem, 3.2vh, 2.35rem) 0 0;
+          color: #c9000c;
           font-family: 'Inter', sans-serif;
-          font-size: clamp(5.5rem, 11.2vw, 11rem);
+          font-size: clamp(4.8rem, 9.2vw, 9.2rem);
           font-weight: 900;
-          line-height: 0.735;
-          letter-spacing: -0.078em;
+          line-height: 0.8;
+          letter-spacing: -0.045em;
           text-transform: uppercase;
+        }
+
+        .premium-hero__title::before,
+        .premium-hero__title::after {
+          content: '';
+          position: absolute;
+          z-index: 0;
+          pointer-events: none;
+          border: 1px dashed rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+        }
+
+        .premium-hero__title::before {
+          left: -0.14em;
+          top: -0.3em;
+          width: 1.12em;
+          height: 1.45em;
+          transform: rotate(-18deg);
+        }
+
+        .premium-hero__title::after {
+          right: -0.1em;
+          top: -0.42em;
+          width: 0.86em;
+          height: 1.8em;
+          transform: rotate(28deg);
+          opacity: 0.72;
         }
 
         .premium-hero__title-mask {
           display: block;
-          overflow: hidden;
-          padding: 0.08em 0.08em 0.09em 0;
-          margin: -0.08em 0 -0.08em;
+          overflow: visible;
+          padding: 0.14em 0.13em 0.16em 0.09em;
+          margin: -0.14em -0.13em -0.16em -0.09em;
         }
 
         .premium-hero__title-line {
+          position: relative;
+          z-index: 3;
+          display: flex;
+          width: min(600px, 52vw);
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.3em;
+          padding-right: 0.06em;
+          line-height: 0.8;
+          letter-spacing: -0.035em;
+        }
+
+        .premium-hero__word {
+          position: relative;
           display: block;
           width: fit-content;
-          padding-right: 0.06em;
+          isolation: isolate;
+          color: transparent;
+          -webkit-text-fill-color: transparent;
+          font-weight: 900;
+          letter-spacing: -0.035em;
+          background: none;
         }
 
-        .premium-hero__title-line--lin {
-          color: #f5f5f2;
-          letter-spacing: -0.018em;
-          text-shadow: 0 12px 42px rgba(0, 0, 0, 0.38);
+        .premium-hero__word::before {
+          display: none;
         }
 
-        .premium-hero__title-line--yang {
-          color: #CCFF00;
-          text-shadow:
-            0 0 34px rgba(204, 255, 0, 0.13),
-            0 12px 42px rgba(0, 0, 0, 0.42);
+        .premium-hero__handwriting {
+          position: absolute;
+          left: -2%;
+          top: -8%;
+          z-index: 4;
+          width: 106%;
+          height: 120%;
+          overflow: visible;
+          pointer-events: none;
+          transform: rotate(-1.4deg);
+          filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+        }
+
+        .premium-hero__handwriting use {
+          fill: none;
+          stroke-linecap: round;
+          stroke-linejoin: round;
+        }
+
+        .premium-hero__letterform-shadow {
+          fill: rgba(45, 0, 3, 0.9) !important;
+          stroke: none !important;
+          transform: translate(7px, 8px);
+          filter: blur(1.5px);
+        }
+
+        .premium-hero__letterform-primary {
+          fill: url(#hero-red-letter-gradient) !important;
+          stroke: rgba(255, 52, 61, 0.18) !important;
+          stroke-width: 2;
+          filter: drop-shadow(0 12px 16px rgba(55, 0, 4, 0.48));
+        }
+
+        .premium-hero__letterform-slices {
+          display: none;
+        }
+
+        .premium-hero__handwriting-ghost {
+          stroke: rgba(255, 255, 255, 0.28);
+          stroke-width: 13;
+          transform: translate(3px, -2px);
+        }
+
+        .premium-hero__handwriting-primary {
+          stroke: rgba(255, 255, 255, 0.98);
+          stroke-width: 7.5;
+          filter: url(#hero-hand-rough);
+        }
+
+        .premium-hero__collage-chip {
+          position: absolute;
+          z-index: 5;
+          display: block;
+          width: 0.25em;
+          aspect-ratio: 1;
+          border: 1px solid rgba(255, 255, 255, 0.28);
+          background: linear-gradient(135deg, #4a0005, #e00816 58%, #5b0006);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.58), 0 0 12px rgba(221, 0, 15, 0.2);
+          pointer-events: none;
+        }
+
+        .premium-hero__collage-chip::before {
+          content: '';
+          position: absolute;
+          left: 19%;
+          top: 45%;
+          width: 64%;
+          height: 11%;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.94);
+          filter: blur(0.5px);
+          transform: rotate(-38deg);
+        }
+
+        .premium-hero__collage-chip--one {
+          left: 0.05em;
+          top: -0.37em;
+          transform: rotate(18deg);
+        }
+
+        .premium-hero__collage-chip--two {
+          right: -0.18em;
+          top: -0.18em;
+          transform: rotate(14deg) scale(0.82);
+        }
+
+        .premium-hero__collage-chip--three {
+          right: 0.12em;
+          bottom: -0.44em;
+          transform: rotate(-16deg) scale(0.58);
+          opacity: 0.82;
         }
 
         .premium-hero__tagline {
           max-width: 34ch;
-          margin-top: clamp(1.7rem, 3.5vh, 2.6rem);
+          margin-top: clamp(2.2rem, 4.2vh, 3rem);
           color: rgba(255, 255, 255, 0.56);
           font-size: clamp(1rem, 1.35vw, 1.32rem);
           font-weight: 400;
@@ -1367,7 +1570,7 @@
           align-items: center;
           gap: 0.65rem;
           width: fit-content;
-          margin-top: clamp(1.7rem, 3.3vh, 2.35rem);
+          margin-top: clamp(2rem, 4vh, 2.6rem);
           padding: 0.58rem 0.88rem;
           border: 1px solid rgba(255, 255, 255, 0.14);
           border-radius: 999px;
@@ -1390,7 +1593,7 @@
           display: flex;
           align-items: center;
           gap: 1rem;
-          margin-top: 1rem;
+          margin-top: 1.35rem;
         }
 
         .premium-button {
@@ -1715,6 +1918,7 @@
 
           .premium-hero__content {
             width: 100%;
+            transform: translate3d(0, -3.75rem, 0);
           }
 
           .premium-hero__eyebrow {
@@ -1725,20 +1929,66 @@
 
           .premium-hero__title {
             margin-top: 1.25rem;
-            font-size: clamp(3.8rem, 19vw, 6.2rem);
-            line-height: 0.76;
+            font-size: clamp(3.25rem, 18vw, 4.8rem);
+            line-height: 0.8;
+          }
+
+          .premium-hero__motto-bg {
+            left: 50%;
+            top: 95%;
+            width: 27vw;
+            opacity: 0.72;
+            transform: translate(-50%, -50%);
+          }
+
+          .premium-hero__motto-base {
+            fill: rgba(255, 255, 255, 0.042);
+          }
+
+          .premium-hero__title-line {
+            width: 100%;
+            max-width: 340px;
+            gap: 0.24em;
+          }
+
+          .premium-hero__handwriting {
+            left: -2%;
+            top: -7%;
+            width: 105%;
+            height: 118%;
+          }
+
+          .premium-hero__title::before {
+            left: -0.05em;
+            opacity: 0.6;
+          }
+
+          .premium-hero__title::after,
+          .premium-hero__collage-chip--two,
+          .premium-hero__collage-chip--three {
+            display: none;
+          }
+
+          .premium-hero__collage-chip--one {
+            left: 0.08em;
+            top: -0.34em;
+            transform: rotate(16deg) scale(0.72);
           }
 
           .premium-hero__tagline {
             max-width: 29ch;
-            margin-top: 1.55rem;
+            margin-top: 1.9rem;
             font-size: 0.98rem;
           }
 
           .premium-hero__latest {
-            margin-top: 1.55rem;
+            margin-top: 1.85rem;
             font-size: 0.56rem;
             letter-spacing: 0.12em;
+          }
+
+          .premium-hero__actions {
+            margin-top: 1.2rem;
           }
 
           .premium-button {
@@ -2513,12 +2763,17 @@
             const rect = container.getBoundingClientRect();
             const localX = e.clientX - rect.left;
             const localY = e.clientY - rect.top;
+            const isCompactTouchLayout = rect.width <= 767;
+            const hitPaddingX = isCompactTouchLayout ? Math.max(24, rect.width * 0.07) : 0;
+            const hitPaddingY = isCompactTouchLayout ? 36 : 0;
             const startedOnCard = interactiveCardBounds.some(card => (
-              localX >= card.left && localX <= card.right &&
-              localY >= card.top && localY <= card.bottom
+              localX >= card.left - hitPaddingX && localX <= card.right + hitPaddingX &&
+              localY >= card.top - hitPaddingY && localY <= card.bottom + hitPaddingY
             ));
+            const startedInGalleryBand = isCompactTouchLayout &&
+              localY >= rect.height * 0.36 && localY <= rect.height * 0.92;
 
-            if (!startedOnCard) return;
+            if (!startedOnCard && !startedInGalleryBand) return;
 
             activeTouchPointerId = e.pointerId;
             isTouchCandidate = true;
@@ -2542,11 +2797,11 @@
             if (isTouchCandidate) {
               const totalX = e.clientX - gestureStartX;
               const totalY = e.clientY - gestureStartY;
-              if (Math.hypot(totalX, totalY) < 8) return;
+              if (Math.hypot(totalX, totalY) < 6) return;
 
               // Only a clearly horizontal gesture may take over from native scrolling.
               // Vertical and diagonal intent always belongs to the page.
-              if (Math.abs(totalX) <= Math.abs(totalY) * 1.25) {
+              if (Math.abs(totalX) <= Math.abs(totalY) * 1.05) {
                 if (container.hasPointerCapture?.(e.pointerId)) {
                   container.releasePointerCapture?.(e.pointerId);
                 }
@@ -2570,7 +2825,8 @@
           registerInteraction();
           const dx = e.clientX - startX;
           startX = e.clientX;
-          targetProgress += dx * 0.0035 * scrollSpeed * dragSensitivity;
+          const touchDragBoost = e.pointerType === 'touch' ? 1.65 : 1;
+          targetProgress += dx * 0.0035 * scrollSpeed * dragSensitivity * touchDragBoost;
         };
 
         const handlePointerUp = (e) => {
@@ -4458,6 +4714,35 @@ void main() {
       <section id="home" className={`premium-hero ${introComplete ? 'is-ready' : ''}`} aria-labelledby="hero-title">
         <BackgroundGlow introComplete={introComplete} />
 
+        <div className="premium-hero__motto-bg" aria-hidden="true">
+          <svg className="premium-hero__motto-svg" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMid meet" focusable="false">
+            <defs>
+              <mask id="hero-motto-text-mask" x="0" y="0" width="1000" height="300" maskUnits="userSpaceOnUse" style={{ maskType: 'luminance' }}>
+                <rect x="0" y="0" width="1000" height="300" fill="#000" />
+                <image
+                  href="./assets/intro/infinite-progress.webp"
+                  x="-1000"
+                  y="-694"
+                  width="3000"
+                  height="1688"
+                  preserveAspectRatio="none"
+                />
+              </mask>
+              <linearGradient id="hero-motto-sweep-gradient" x1="0%" y1="0%" x2="100%" y2="100%" gradientUnits="objectBoundingBox">
+                <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
+                <stop offset="31%" stopColor="#ffffff" stopOpacity="0.025" />
+                <stop offset="44%" stopColor="#ffffff" stopOpacity="0.32" />
+                <stop offset="50%" stopColor="#ffffff" stopOpacity="0.46" />
+                <stop offset="57%" stopColor="#ecffc0" stopOpacity="0.3" />
+                <stop offset="72%" stopColor="#CCFF00" stopOpacity="0.05" />
+                <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <rect className="premium-hero__motto-base" x="0" y="0" width="1000" height="300" mask="url(#hero-motto-text-mask)" />
+            <rect className="premium-hero__motto-sweep" x="-420" y="0" width="420" height="300" fill="url(#hero-motto-sweep-gradient)" mask="url(#hero-motto-text-mask)" />
+          </svg>
+        </div>
+
         <div className="premium-hero__inner">
           <div className="premium-hero__content">
             <p className="premium-hero__eyebrow premium-hero__reveal" style={{ '--hero-delay': '0.12s' }}>
@@ -4466,11 +4751,77 @@ void main() {
 
             <h1 id="hero-title" className="premium-hero__title" aria-label="LIN YANG">
               <span className="premium-hero__title-mask" aria-hidden="true">
-                <span className="premium-hero__title-line premium-hero__title-line--lin premium-hero__reveal" style={{ '--hero-delay': '0.22s' }}>LIN</span>
+                <span className="premium-hero__title-line premium-hero__reveal" style={{ '--hero-delay': '0.22s' }}>
+                  <span className="premium-hero__word premium-hero__word--lin">LIN</span>
+                  <span className="premium-hero__word premium-hero__word--yang">YANG</span>
+                  <svg
+                    className="premium-hero__handwriting"
+                    viewBox="0 0 700 430"
+                    preserveAspectRatio="none"
+                    focusable="false"
+                  >
+                    <defs>
+                      <linearGradient id="hero-red-letter-gradient" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor="#5e0006" />
+                        <stop offset="38%" stopColor="#b9000e" />
+                        <stop offset="64%" stopColor="#ef101c" />
+                        <stop offset="100%" stopColor="#6f0007" />
+                      </linearGradient>
+                      <filter id="hero-hand-rough" x="-8%" y="-16%" width="116%" height="132%" colorInterpolationFilters="sRGB">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.018 0.035" numOctaves="2" seed="9" result="heroHandNoise" />
+                        <feDisplacementMap in="SourceGraphic" in2="heroHandNoise" scale="3.2" xChannelSelector="R" yChannelSelector="B" />
+                      </filter>
+                      <filter id="hero-slice-frost" x="-4%" y="-18%" width="108%" height="136%" colorInterpolationFilters="sRGB">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.58 0.22" numOctaves="3" seed="17" result="heroSliceNoise" />
+                        <feColorMatrix
+                          in="heroSliceNoise"
+                          type="matrix"
+                          values="1 0 0 0 0
+                                  0 1 0 0 0
+                                  0 0 1 0 0
+                                  0 0 0 1.55 -0.46"
+                          result="heroSliceGrain"
+                        />
+                        <feComposite in="heroSliceGrain" in2="SourceGraphic" operator="in" result="heroSliceClippedGrain" />
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.65" result="heroSliceSoftBase" />
+                        <feBlend in="heroSliceSoftBase" in2="heroSliceClippedGrain" mode="screen" />
+                      </filter>
+                      <g id="hero-block-letterforms">
+                        <path d="M22 43 L86 39 L89 132 L143 128 L147 171 L25 176 Z" />
+                        <path transform="translate(14 0)" d="M151 42 L206 41 L202 173 L154 176 Z" />
+                        <path transform="translate(28 0)" d="M215 43 L264 39 L303 121 L300 39 L338 42 L334 175 L287 173 L248 91 L252 175 L213 172 Z" />
+                        <path transform="matrix(0.81 0 0 1 -267.98 195)" d="M358 42 L411 39 L441 91 L472 36 L527 42 L468 126 L466 173 L414 176 L416 126 Z" />
+                        <path transform="matrix(0.81 0 0 1 -267.98 195)" fillRule="evenodd" d="M505 175 L552 40 L610 37 L651 174 L600 176 L592 145 L552 146 L545 176 Z M562 111 L585 111 L574 70 Z" />
+                        <path transform="matrix(0.81 0 0 1 -267.98 195)" d="M651 42 L699 38 L739 121 L736 38 L778 42 L773 175 L727 173 L686 90 L690 176 L650 171 Z" />
+                        <path transform="matrix(0.8505 0 0 1.12 -299.327 182.8)" d="M921 72 C894 41 851 32 817 50 C781 69 774 119 792 150 C812 183 866 188 920 157 L921 105 L859 106 L861 137 L885 136 C869 149 839 148 829 129 C817 106 825 77 851 70 C871 65 891 74 901 88 Z" />
+                      </g>
+                      <g id="hero-hand-linework">
+                        <path d="M34 39 C29 76 31 119 42 166 C79 163 108 161 137 154" />
+                        <path transform="translate(14 0)" d="M162 45 C161 78 159 123 168 164 M143 45 C159 39 178 40 191 46 M146 164 C162 159 181 159 196 165" />
+                        <path transform="translate(28 0)" d="M220 166 C216 126 218 81 223 43 C257 72 286 119 315 164 C318 118 315 75 324 39" />
+                        <path transform="matrix(0.81 0 0 1 -267.98 195)" d="M381 43 C399 64 420 84 443 104 C464 83 479 62 493 36 M443 103 C440 126 443 149 447 168" />
+                        <path transform="matrix(0.81 0 0 1 -267.98 195)" d="M516 168 C536 119 553 77 579 38 C602 80 619 125 634 168 M542 119 C564 114 590 116 615 121" />
+                        <path transform="matrix(0.81 0 0 1 -267.98 195)" d="M661 168 C658 127 660 82 667 43 C702 77 729 120 758 166 C762 118 759 76 768 38" />
+                        <path transform="matrix(0.8505 0 0 1.12 -299.327 182.8)" d="M902 61 C881 38 840 37 812 61 C782 87 784 137 815 158 C846 179 886 163 906 137 C908 124 907 113 907 105 C885 106 869 107 851 112" />
+                        <path d="M89 28 C100 18 111 17 120 23" />
+                        <path transform="translate(28 0)" d="M347 174 C359 181 371 181 381 174" />
+                        <path transform="matrix(0.8505 0 0 1.12 -299.327 182.8)" d="M790 35 C799 24 809 20 818 22" />
+                      </g>
+                    </defs>
+                    <use href="#hero-block-letterforms" className="premium-hero__letterform-shadow" />
+                    <use href="#hero-block-letterforms" className="premium-hero__letterform-primary" />
+                    <g className="premium-hero__letterform-slices">
+                      <path d="M18 92 L341 79 L340 105 L19 119 Z" />
+                      <path transform="translate(-336 195)" d="M356 132 L925 112 L924 138 L357 156 Z" />
+                      <path d="M176 36 L191 36 L180 178 L165 178 Z" />
+                      <path transform="translate(-336 195)" d="M681 36 L699 37 L687 177 L669 177 Z" />
+                    </g>
+                  </svg>
+                </span>
               </span>
-              <span className="premium-hero__title-mask" aria-hidden="true">
-                <span className="premium-hero__title-line premium-hero__title-line--yang premium-hero__reveal" style={{ '--hero-delay': '0.34s' }}>YANG</span>
-              </span>
+              <span className="premium-hero__collage-chip premium-hero__collage-chip--one" aria-hidden="true"></span>
+              <span className="premium-hero__collage-chip premium-hero__collage-chip--two" aria-hidden="true"></span>
+              <span className="premium-hero__collage-chip premium-hero__collage-chip--three" aria-hidden="true"></span>
             </h1>
 
             <p className="premium-hero__tagline premium-hero__reveal" style={{ '--hero-delay': '0.5s' }}>
@@ -5106,7 +5457,7 @@ void main() {
       };
 
       const handlePosterStagePointerDown = event => {
-        if (event.pointerType !== 'touch' || !event.isPrimary || !event.target.closest?.('[data-aigc-poster-card]')) return;
+        if (event.pointerType !== 'touch' || !event.isPrimary) return;
         posterSwipeRef.current = {
           active: true,
           horizontal: false,
@@ -5124,13 +5475,13 @@ void main() {
         const deltaY = event.clientY - gesture.startY;
 
         if (!gesture.horizontal) {
-          const activationDistance = gesture.pointerType === 'touch' ? 12 : 5;
+          const activationDistance = gesture.pointerType === 'touch' ? 7 : 5;
           if (Math.abs(deltaX) < activationDistance && Math.abs(deltaY) < activationDistance) return;
           if (gesture.pointerType === 'touch' && Math.abs(deltaY) >= Math.abs(deltaX)) {
             gesture.active = false;
             return;
           }
-          if (gesture.pointerType === 'touch' && Math.abs(deltaX) <= Math.abs(deltaY) * 1.25) return;
+          if (gesture.pointerType === 'touch' && Math.abs(deltaX) <= Math.abs(deltaY) * 1.05) return;
           gesture.horizontal = true;
           event.currentTarget.setPointerCapture?.(event.pointerId);
           setIsPosterDragging(true);
@@ -5148,7 +5499,7 @@ void main() {
         posterSwipeRef.current.active = false;
         const deltaX = event.clientX - gesture.startX;
         const isHorizontalDrag = gesture.horizontal && Math.abs(deltaX) >= 8;
-        const shouldSwitchCard = gesture.horizontal && Math.abs(deltaX) >= 24;
+        const shouldSwitchCard = gesture.horizontal && Math.abs(deltaX) >= 20;
 
         resetPosterDragAngle();
         setIsPosterDragging(false);
@@ -5457,6 +5808,22 @@ void main() {
                     );
                   })}
                 </div>
+                <button
+                  type="button"
+                  aria-label="上一张 AI 视觉海报"
+                  onClick={() => focusPoster(activePosterIndex - 1)}
+                  className="absolute left-2 top-1/2 z-[260] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/55 text-xl text-white shadow-[0_10px_28px_rgba(0,0,0,0.42)] backdrop-blur-md transition active:scale-95 md:hidden"
+                >
+                  <span aria-hidden="true">‹</span>
+                </button>
+                <button
+                  type="button"
+                  aria-label="下一张 AI 视觉海报"
+                  onClick={() => focusPoster(activePosterIndex + 1)}
+                  className="absolute right-2 top-1/2 z-[260] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/55 text-xl text-white shadow-[0_10px_28px_rgba(0,0,0,0.42)] backdrop-blur-md transition active:scale-95 md:hidden"
+                >
+                  <span aria-hidden="true">›</span>
+                </button>
                 <p className="sr-only" role="status" aria-live="polite">
                   第 {activePosterIndex + 1} 张，共 {posterItems.length} 张：{posterItems[activePosterIndex].title}
                 </p>
@@ -8198,7 +8565,8 @@ void main() {
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
             <div className="bg-black/60 backdrop-blur-md px-6 py-2.5 rounded-full border border-purple-500/30 text-xs font-mono text-gray-300 flex items-center gap-3 tracking-widest shadow-2xl">
               <span className="text-[#CCFF00]">←</span>
-              <span>拖拽或滚动鼠标可自由旋转 3D 环形卡片 (不操作时自动恢复轮播)</span>
+              <span className="md:hidden whitespace-nowrap">左右滑动卡片</span>
+              <span className="hidden md:inline">拖拽或滚动鼠标可自由旋转 3D 环形卡片 (不操作时自动恢复轮播)</span>
               <span className="text-[#CCFF00]">→</span>
             </div>
           </div>
