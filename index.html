@@ -218,6 +218,7 @@
             bottom: 1.5rem;
             font-size: 0.5rem;
           }
+
         }
 
         .cinematic-reveal {
@@ -1052,9 +1053,9 @@
         }
 
         .glass-surface--svg {
-          background: rgba(7, 7, 11, var(--glass-frost, 0.16));
-          -webkit-backdrop-filter: blur(22px) saturate(var(--glass-saturation, 1.45)) brightness(1.06);
-          backdrop-filter: var(--filter-id) saturate(var(--glass-saturation, 1.45)) brightness(1.06);
+          background: transparent;
+          -webkit-backdrop-filter: none;
+          backdrop-filter: none;
         }
 
         .glass-surface--fallback {
@@ -1073,17 +1074,12 @@
         .premium-nav__glass {
           width: 100%;
           height: 100%;
-          background:
-            linear-gradient(118deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.025) 28%, transparent 48%),
-            linear-gradient(300deg, rgba(235, 242, 255, 0.04), transparent 38%),
-            rgba(7, 7, 11, 0.42);
-          border: 1px solid rgba(255, 255, 255, 0.22);
+          background: rgba(8, 8, 12, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.28),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.07),
-            inset 0 0 24px rgba(255, 255, 255, 0.035),
-            0 18px 54px rgba(0, 0, 0, 0.42),
-            0 4px 18px rgba(0, 0, 0, 0.24);
+            inset 0 1px 0 rgba(255, 255, 255, 0.13),
+            0 14px 42px rgba(0, 0, 0, 0.2),
+            0 3px 14px rgba(0, 0, 0, 0.12);
         }
 
         .premium-nav__glass::before {
@@ -1091,22 +1087,39 @@
           position: absolute;
           inset: 0;
           z-index: 0;
+          display: block;
           border-radius: inherit;
-          background:
-            radial-gradient(circle at 13% -20%, rgba(255, 255, 255, 0.38), transparent 31%),
-            linear-gradient(100deg, transparent 58%, rgba(255, 255, 255, 0.025) 78%, rgba(235, 242, 255, 0.045));
-          opacity: 0.82;
+          background: rgba(10, 10, 14, 0.1);
+          -webkit-backdrop-filter: blur(3px) saturate(1.05);
+          backdrop-filter: blur(3px) saturate(1.05);
           pointer-events: none;
         }
 
+        .glass-surface__edge {
+          display: none;
+        }
+
+        .premium-nav__glass.glass-surface--svg .glass-surface__edge {
+          display: block;
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          border-radius: 999px;
+          pointer-events: none;
+          -webkit-backdrop-filter: var(--filter-id);
+          backdrop-filter: var(--filter-id);
+          opacity: 1;
+          will-change: backdrop-filter;
+        }
+
         .premium-nav__glass.glass-surface--fallback {
-          background:
-            linear-gradient(118deg, rgba(255, 255, 255, 0.13), transparent 31%),
-            linear-gradient(300deg, rgba(235, 242, 255, 0.035), transparent 42%),
-            rgba(7, 7, 11, 0.64);
+          background: transparent;
+          -webkit-backdrop-filter: none;
+          backdrop-filter: none;
         }
 
         .premium-nav__glass .glass-surface__content {
+          z-index: 2;
           padding: 0;
           align-items: stretch;
           justify-content: stretch;
@@ -1116,6 +1129,7 @@
           width: 100%;
           height: 100%;
           border-radius: inherit;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.92), 0 0 9px rgba(0, 0, 0, 0.58);
         }
 
         .specular-nav {
@@ -1673,8 +1687,8 @@
           }
 
           .premium-nav__glass.glass-surface--svg {
-            -webkit-backdrop-filter: blur(18px) saturate(1.18) brightness(1.04);
-            backdrop-filter: blur(18px) saturate(1.18) brightness(1.04);
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
           }
 
           .premium-nav__brand {
@@ -1916,8 +1930,8 @@
           .text-type__cursor { animation: none; }
 
           .premium-nav__glass.glass-surface--svg {
-            -webkit-backdrop-filter: blur(20px) saturate(1.18) brightness(1.04);
-            backdrop-filter: blur(20px) saturate(1.18) brightness(1.04);
+            -webkit-backdrop-filter: none;
+            backdrop-filter: none;
           }
 
           .premium-nav,
@@ -3467,10 +3481,8 @@
       const [svgSupported, setSvgSupported] = useState(false);
       const containerRef = useRef(null);
       const feImageRef = useRef(null);
-      const redChannelRef = useRef(null);
-      const greenChannelRef = useRef(null);
-      const blueChannelRef = useRef(null);
-      const gaussianBlurRef = useRef(null);
+      const lensChannelRef = useRef(null);
+      const mapBlurRef = useRef(null);
 
       const supportsSVGFilters = () => {
         if (typeof window === 'undefined' || typeof document === 'undefined') return false;
@@ -3486,23 +3498,22 @@
         const rect = containerRef.current?.getBoundingClientRect();
         const actualWidth = Math.max(1, Math.round(rect?.width || 400));
         const actualHeight = Math.max(1, Math.round(rect?.height || 80));
-        const edgeSize = Math.min(actualWidth, actualHeight) * (borderWidth * 0.5);
         const svgContent = `
           <svg viewBox="0 0 ${actualWidth} ${actualHeight}" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="${redGradId}" x1="100%" y1="0%" x2="0%" y2="0%">
-                <stop offset="0%" stop-color="#0000"/>
-                <stop offset="100%" stop-color="red"/>
+              <linearGradient id="${redGradId}" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#800000"/>
+                <stop offset="100%" stop-color="#800000"/>
               </linearGradient>
               <linearGradient id="${blueGradId}" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stop-color="#0000"/>
-                <stop offset="100%" stop-color="blue"/>
+                <stop offset="0%" stop-color="#000000"/>
+                <stop offset="50%" stop-color="#008000"/>
+                <stop offset="100%" stop-color="#00ff00"/>
               </linearGradient>
             </defs>
             <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" fill="black"/>
-            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${borderRadius}" fill="url(#${redGradId})"/>
-            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" rx="${borderRadius}" fill="url(#${blueGradId})" style="mix-blend-mode:${mixBlendMode}"/>
-            <rect x="${edgeSize}" y="${edgeSize}" width="${Math.max(1, actualWidth - edgeSize * 2)}" height="${Math.max(1, actualHeight - edgeSize * 2)}" rx="${borderRadius}" fill="hsl(0 0% ${brightness}% / ${opacity})" style="filter:blur(${blur}px)"/>
+            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" fill="url(#${redGradId})"/>
+            <rect x="0" y="0" width="${actualWidth}" height="${actualHeight}" fill="url(#${blueGradId})" style="mix-blend-mode:${mixBlendMode}"/>
           </svg>
         `;
         return `data:image/svg+xml,${encodeURIComponent(svgContent)}`;
@@ -3514,30 +3525,19 @@
 
       useEffect(() => {
         updateDisplacementMap();
-        [
-          { ref: redChannelRef, offset: redOffset },
-          { ref: greenChannelRef, offset: greenOffset },
-          { ref: blueChannelRef, offset: blueOffset }
-        ].forEach(({ ref, offset }) => {
-          if (!ref.current) return;
-          ref.current.setAttribute('scale', String(distortionScale + offset));
-          ref.current.setAttribute('xChannelSelector', xChannel);
-          ref.current.setAttribute('yChannelSelector', yChannel);
-        });
-        gaussianBlurRef.current?.setAttribute('stdDeviation', String(displace));
+        if (lensChannelRef.current) {
+          lensChannelRef.current.setAttribute('scale', String(distortionScale));
+          lensChannelRef.current.setAttribute('xChannelSelector', xChannel);
+          lensChannelRef.current.setAttribute('yChannelSelector', yChannel);
+        }
+        mapBlurRef.current?.setAttribute('stdDeviation', String(displace));
       }, [
         width,
         height,
         borderRadius,
         borderWidth,
-        brightness,
-        opacity,
-        blur,
         displace,
         distortionScale,
-        redOffset,
-        greenOffset,
-        blueOffset,
         xChannel,
         yChannel,
         mixBlendMode
@@ -3578,18 +3578,12 @@
             <defs>
               <filter id={filterId} colorInterpolationFilters="sRGB" x="0%" y="0%" width="100%" height="100%">
                 <feImage ref={feImageRef} x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map" />
-                <feDisplacementMap ref={redChannelRef} in="SourceGraphic" in2="map" result="dispRed" />
-                <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-                <feDisplacementMap ref={greenChannelRef} in="SourceGraphic" in2="map" result="dispGreen" />
-                <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-                <feDisplacementMap ref={blueChannelRef} in="SourceGraphic" in2="map" result="dispBlue" />
-                <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
-                <feBlend in="red" in2="green" mode="screen" result="rg" />
-                <feBlend in="rg" in2="blue" mode="screen" result="output" />
-                <feGaussianBlur ref={gaussianBlurRef} in="output" stdDeviation="0.7" />
+                <feGaussianBlur ref={mapBlurRef} in="map" stdDeviation="0.55" result="smoothMap" />
+                <feDisplacementMap ref={lensChannelRef} in="SourceGraphic" in2="smoothMap" />
               </filter>
             </defs>
           </svg>
+          <span className="glass-surface__edge" aria-hidden="true" />
           <div className="glass-surface__content">{children}</div>
         </div>
       );
@@ -3673,17 +3667,16 @@
               width="100%"
               height="100%"
               borderRadius={999}
-              borderWidth={0.12}
-              brightness={68}
-              opacity={0.74}
-              blur={12}
-              displace={0.3}
-              backgroundOpacity={0.16}
-              saturation={1.18}
-              distortionScale={-62}
+              brightness={60}
+              opacity={0.68}
+              blur={0}
+              displace={1.2}
+              backgroundOpacity={0}
+              saturation={1.04}
+              distortionScale={-18}
               redOffset={0}
-              greenOffset={1}
-              blueOffset={2}
+              greenOffset={0}
+              blueOffset={0}
               mixBlendMode="screen"
               className="premium-nav__glass"
             >
