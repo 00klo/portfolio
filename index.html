@@ -635,12 +635,12 @@
 
       .ai-poster-ring-shell {
         --poster-card-width: clamp(210px, 62vw, 250px);
-        --poster-ring-radius: 420px;
+        --poster-ring-radius: 580px;
         position: relative;
         height: 430px;
         overflow: hidden;
         isolation: isolate;
-        perspective: 1320px;
+        perspective: 1500px;
         perspective-origin: 50% 48%;
         touch-action: pan-y pinch-zoom;
         overscroll-behavior-x: contain;
@@ -713,6 +713,14 @@
       .ai-poster-ring-card.is-active .ai-poster-ring-card__surface {
         transform: translate(-50%, -50%) translateZ(12px) scale(1.035);
         box-shadow: 0 34px 85px rgba(0, 0, 0, .46);
+      }
+
+      @media (max-width: 767px), (max-height: 700px) and (pointer: coarse) {
+        .ai-poster-ring-card[data-poster-distance="3"] {
+          visibility: hidden;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
       }
 
       @media (min-width: 768px) {
@@ -5753,6 +5761,7 @@ void main() {
                       <div
                         key={item.media}
                         className={`ai-poster-ring-card ${isActive ? 'is-active' : ''}`}
+                        data-poster-distance={distance}
                         aria-hidden={!isVisibleCard}
                         style={{
                           '--poster-angle': `${index * posterAngleStep}deg`,
