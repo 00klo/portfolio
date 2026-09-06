@@ -2459,20 +2459,22 @@
         { image: './assets/circular-posters/poster-she-woke.webp' },
         { image: './assets/circular-selected/portfolio-frame-01.jpg' },
         { image: './assets/circular-posters/poster-escape-monday.webp' },
+        { image: './assets/circular-aigc/aigc-still-spider.webp' },
         { image: './assets/gallery-added/editorial-distant-shore.webp' },
         { image: './assets/circular-selected/portfolio-frame-14.jpg' },
         { image: './assets/circular-posters/poster-last-seen-midnight.webp' },
-        { image: './assets/circular-selected/portfolio-frame-07.jpg' },
+        { image: './assets/circular-aigc/aigc-still-cyber.webp' },
         { image: './assets/circular-posters/poster-youth-in-wild.webp' },
         { image: './assets/circular-selected/portfolio-frame-12.jpg' },
+        { image: './assets/circular-aigc/aigc-still-mirinda.webp' },
         { image: './assets/gallery-added/editorial-persimmon.webp' },
         { image: './assets/circular-posters/poster-out-of-focus.webp' },
-        { image: './assets/circular-selected/portfolio-frame-02.jpg' },
+        { image: './assets/circular-aigc/aigc-still-costume.webp' },
         { image: './assets/circular-posters/poster-travelers-in-wind.webp' },
         { image: './assets/circular-selected/portfolio-frame-15.jpg' },
         { image: './assets/circular-posters/poster-wind-passed-by.webp' },
         { image: './assets/gallery-added/editorial-harbor-dusk.webp' },
-        { image: './assets/circular-selected/portfolio-frame-04.jpg' },
+        { image: './assets/circular-aigc/aigc-still-kfc.webp' },
         { image: './assets/circular-posters/poster-wind-off-duty.webp' },
         { image: './assets/circular-selected/portfolio-frame-06.jpg' },
         { image: './assets/circular-posters/poster-nothing-happened.webp' },
@@ -2482,7 +2484,7 @@
         { image: './assets/circular-posters/poster-fireworks-youth.webp' },
         { image: './assets/circular-selected/portfolio-frame-08.jpg' },
         { image: './assets/circular-posters/poster-summer-escape.webp' },
-        { image: './assets/circular-selected/portfolio-frame-10.jpg' },
+        { image: './assets/circular-aigc/aigc-still-mcdonalds.webp' },
         { image: './assets/circular-posters/poster-message-yesterday.webp' },
         { image: './assets/circular-selected/portfolio-frame-13.jpg' },
       ], []);
@@ -5387,6 +5389,15 @@ void main() {
 
     const GallerySection = ({ setActiveModal }) => {
       const [ref, isVisible] = useScrollReveal();
+      const [galleryLightboxItem, setGalleryLightboxItem] = useState(null);
+      const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+      const galleryTrackRef = useRef(null);
+      const galleryCardRefs = useRef([]);
+      const galleryScrollFrameRef = useRef(0);
+      const programmaticGalleryIndexRef = useRef(null);
+      const galleryScrollSettleTimerRef = useRef(0);
+      const galleryNavRef = useRef(null);
+      const galleryNavDragRef = useRef(false);
       const posterCount = 14;
       const posterAngleStep = 360 / posterCount;
       const POSTER_AUTOPLAY_INTERVAL = 3000;
@@ -5592,11 +5603,116 @@ void main() {
       }, []);
 
       const galleryItems = [
-        { title: '人物情绪特写', category: 'AIGC', year: '2026', desc: '人物设定与近景情绪表达测试。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-01.mp4', poster: './assets/visual-gallery/videos/aigc-video-01-poster.jpg' },
-        { title: '叙事分镜实验', category: 'AIGC', year: '2026', desc: '镜头节奏与人物关系的分镜探索。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-03.mp4', poster: './assets/visual-gallery/videos/aigc-video-03-poster.jpg' },
+        { title: '品牌视觉｜美年达', category: 'AIGC', year: '2026', desc: '美年达与小黄人联名的多镜头产品视觉。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-brand-mirinda.mp4', poster: './assets/visual-gallery/videos/aigc-brand-mirinda-poster.jpg' },
+        { title: '品牌视觉｜KFC', category: 'AIGC', year: '2026', desc: '炸鸡产品质感与品牌场景的广告视觉实验。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-brand-kfc.mp4', poster: './assets/visual-gallery/videos/aigc-brand-kfc-poster.jpg' },
+        { title: '品牌视觉｜麦当劳', category: 'AIGC', year: '2026', desc: '汉堡与薯条产品细节的广告镜头生成。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-brand-mcdonalds.mp4', poster: './assets/visual-gallery/videos/aigc-brand-mcdonalds-poster.jpg' },
+        { title: '人物情绪｜泪光', category: 'AIGC', year: '2026', desc: '人物设定与近景情绪表达测试。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-01.mp4', poster: './assets/visual-gallery/videos/aigc-video-01-poster.jpg' },
+        { title: '人物情绪｜相望', category: 'AIGC', year: '2026', desc: '双人情绪变化与眼神叙事探索。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-03.mp4', poster: './assets/visual-gallery/videos/aigc-video-03-poster.jpg' },
+        { title: '人物情绪｜古风特写', category: 'AIGC', year: '2026', desc: '古风人物近景、伤痕细节与微表情生成实验。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-expression-costume.mp4', poster: './assets/visual-gallery/videos/aigc-expression-costume-poster.jpg' },
+        { title: '未来角色设定', category: 'AIGC', year: '2026', desc: '猫系角色与机甲形态的视觉设定短片。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-character-cyber.mp4', poster: './assets/visual-gallery/videos/aigc-character-cyber-poster.jpg' },
+        { title: '蜘蛛侠｜城市追逐', category: 'AIGC', year: '2026', desc: '蜘蛛侠穿梭城市空间的高速动作与镜头运动测试。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-action-spider.mp4', poster: './assets/visual-gallery/videos/aigc-action-spider-poster.jpg' },
         { title: '游戏宣传影像', category: 'AIGC', year: '2026', desc: '二维赛璐璐角色与抽象 MG 合成实验。', mediaType: 'video', media: './assets/visual-gallery/videos/aigc-video-04.mp4', poster: './assets/visual-gallery/videos/aigc-video-04-poster.jpg' },
-        { title: '归途光影', category: 'AIGC', year: '2026', desc: '列车夕照、人物倒影与乡野景观的电影感生成实验。', media: './assets/visual-gallery/stills/gallery-still-05-doubao-v2.jpg' },
       ];
+
+      const syncGalleryCardFromScroll = () => {
+        const track = galleryTrackRef.current;
+        if (!track) return;
+        const trackCenter = track.getBoundingClientRect().left + track.clientWidth / 2;
+        let nearestIndex = 0;
+        let nearestDistance = Infinity;
+
+        galleryCardRefs.current.forEach((card, index) => {
+          if (!card) return;
+          const rect = card.getBoundingClientRect();
+          const distance = Math.abs(rect.left + rect.width / 2 - trackCenter);
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestIndex = index;
+          }
+        });
+
+        setActiveGalleryIndex(currentIndex => nearestIndex === currentIndex ? currentIndex : nearestIndex);
+      };
+
+      const settleProgrammaticGalleryScroll = (delay = 150) => {
+        window.clearTimeout(galleryScrollSettleTimerRef.current);
+        galleryScrollSettleTimerRef.current = window.setTimeout(() => {
+          programmaticGalleryIndexRef.current = null;
+          syncGalleryCardFromScroll();
+        }, delay);
+      };
+
+      const focusGalleryCard = (index, behavior = 'smooth') => {
+        const track = galleryTrackRef.current;
+        const card = galleryCardRefs.current[index];
+        if (!track || !card) return;
+        programmaticGalleryIndexRef.current = index;
+        settleProgrammaticGalleryScroll(900);
+        setActiveGalleryIndex(index);
+        const left = card.offsetLeft - (track.clientWidth - card.offsetWidth) / 2;
+        track.scrollTo({ left, behavior });
+      };
+
+      const handleGalleryScroll = () => {
+        if (galleryScrollFrameRef.current) return;
+        galleryScrollFrameRef.current = requestAnimationFrame(() => {
+          galleryScrollFrameRef.current = 0;
+          if (programmaticGalleryIndexRef.current !== null) {
+            settleProgrammaticGalleryScroll();
+            return;
+          }
+          syncGalleryCardFromScroll();
+        });
+      };
+
+      const openActiveGalleryFilm = () => {
+        const item = galleryItems[activeGalleryIndex];
+        if (!item) return;
+        setGalleryLightboxItem(item);
+      };
+
+      const scrubGalleryNav = (clientX, behavior = 'auto') => {
+        const nav = galleryNavRef.current;
+        if (!nav) return;
+        const dots = Array.from(nav.querySelectorAll('button'));
+        let nextIndex = 0;
+        let nearestDistance = Infinity;
+        dots.forEach((dot, index) => {
+          const rect = dot.getBoundingClientRect();
+          const distance = Math.abs(clientX - (rect.left + rect.width / 2));
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nextIndex = index;
+          }
+        });
+        if (nextIndex !== activeGalleryIndex) focusGalleryCard(nextIndex, behavior);
+      };
+
+      const handleGalleryNavPointerDown = event => {
+        if (event.button !== undefined && event.button !== 0) return;
+        galleryNavDragRef.current = true;
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        scrubGalleryNav(event.clientX);
+      };
+
+      const handleGalleryNavPointerMove = event => {
+        if (!galleryNavDragRef.current) return;
+        event.preventDefault();
+        scrubGalleryNav(event.clientX);
+      };
+
+      const handleGalleryNavPointerEnd = event => {
+        if (!galleryNavDragRef.current) return;
+        galleryNavDragRef.current = false;
+        if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+          event.currentTarget.releasePointerCapture(event.pointerId);
+        }
+      };
+
+      useEffect(() => () => {
+        window.cancelAnimationFrame(galleryScrollFrameRef.current);
+        window.clearTimeout(galleryScrollSettleTimerRef.current);
+      }, []);
 
       const posterItems = [
         { title: '她在凌晨三点醒来', category: 'AI POSTER', year: '2026', desc: '悬疑氛围与中文书法标题的电影海报实验。', media: './assets/circular-posters/poster-she-woke.webp' },
@@ -5634,60 +5750,132 @@ void main() {
                   <FoldText text="AIGC CINEMA" perspective={700} color="#ffffff" />
                 </h2>
               </div>
-              <div className="flex gap-2 mt-6 md:mt-0 font-mono text-xs flex-wrap">
-                <button type="button" aria-pressed="true" className="px-4 py-2 rounded-full border bg-[#CCFF00] text-black border-[#CCFF00] font-bold cursor-default">
-                  AIGC
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={openActiveGalleryFilm}
+                className="group/watch mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-400 transition-colors hover:text-sky-300 md:mt-0"
+              >
+                观看影片
+                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current text-[9px] transition-transform group-hover/watch:scale-110">▶</span>
+              </button>
             </div>
 
-            <div className={`cinematic-reveal-grid grid grid-cols-1 md:grid-cols-2 gap-6 ${isVisible ? 'is-visible' : ''}`}>
+            <div
+              ref={galleryTrackRef}
+              onScroll={handleGalleryScroll}
+              className={`motion-scroll-track cinematic-reveal flex items-center gap-5 overflow-x-auto overflow-y-hidden snap-x snap-mandatory pb-8 md:gap-7 ${isVisible ? 'is-visible' : ''}`}
+              style={{
+                paddingInline: 'max(24px, calc((100% - clamp(300px, 82vw, 889px)) / 2))'
+              }}
+            >
               {galleryItems.map((item, i) => (
-                <BorderGlow
-                  key={i}
-                  edgeSensitivity={35}
-                  glowColor="280 70 70"
-                  backgroundColor="#080311"
-                  borderRadius={20}
-                  glowRadius={35}
-                  glowIntensity={1.0}
-                  coneSpread={25}
-                  colors={['#f472b6', '#38bdf8', '#c084fc']}
-                  fillOpacity={0.3}
-                  className="cinematic-card"
+                <div
+                  key={item.media}
+                  ref={element => { galleryCardRefs.current[i] = element; }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`聚焦 ${item.title}`}
+                  aria-current={activeGalleryIndex === i ? 'true' : undefined}
+                  onClick={() => focusGalleryCard(i)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      focusGalleryCard(i);
+                    }
+                  }}
+                  className={`cinematic-card motion-carousel-card shrink-0 snap-center cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#CCFF00] ${activeGalleryIndex === i ? 'z-10' : 'z-0'}`}
+                  style={{
+                    width: 'clamp(300px, 82vw, 889px)',
+                    aspectRatio: '16 / 9',
+                    '--motion-card-scale': activeGalleryIndex === i ? 1 : 0.94,
+                    opacity: activeGalleryIndex === i ? 1 : 0.5,
+                    filter: activeGalleryIndex === i ? 'none' : 'saturate(0.68) brightness(0.72)',
+                    transition: 'transform 500ms cubic-bezier(0.16,1,0.3,1), opacity 500ms ease, filter 500ms ease'
+                  }}
                 >
-                  <div
-                    className="group relative aspect-[16/10] bg-[#07030d] text-white overflow-hidden flex flex-col justify-end p-6 cursor-default"
+                  <BorderGlow
+                    edgeSensitivity={35}
+                    glowColor="280 70 70"
+                    backgroundColor="#080311"
+                    borderRadius={20}
+                    glowRadius={35}
+                    glowIntensity={1.0}
+                    coneSpread={25}
+                    animated={i === 0}
+                    colors={['#f472b6', '#38bdf8', '#c084fc']}
+                    fillOpacity={0.3}
+                    className="h-full"
                   >
-                    <div className={`absolute inset-0 bg-gradient-to-tr ${colors[i % colors.length]} opacity-70 group-hover:opacity-100 transition-opacity`}></div>
-                    {item.mediaType === 'video' ? (
+                    <div className="group relative flex h-full flex-col justify-between overflow-hidden bg-[#07030d] p-5 text-white md:p-7">
+                      <div className={`absolute inset-0 bg-gradient-to-tr ${colors[i % colors.length]} opacity-70 transition-opacity group-hover:opacity-100`}></div>
                       <LazyPreviewVideo
                         src={item.media}
                         poster={item.poster}
                         ariaLabel={`${item.title} 静音循环预览`}
-                        className="pointer-events-none opacity-80 transition-all duration-700 group-hover:scale-[1.035] group-hover:opacity-100"
+                        isActive={activeGalleryIndex === i}
+                        className="pointer-events-none opacity-85 transition-all duration-700 group-hover:scale-[1.025] group-hover:opacity-100"
                       />
-                    ) : item.media ? (
-                      <img
-                        src={item.media}
-                        alt={`${item.title} 动态封面`}
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.035] transition-all duration-700"
-                      />
-                    ) : null}
-                    {item.media && <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-black/10"></div>}
-                    <div className="absolute inset-0 bg-[radial-gradient(#9ca3af_1px,transparent_1px)] [background-size:20px_20px] opacity-10"></div>
-                    
-                    <div className="relative z-10 flex justify-between items-center mb-2">
-                      <span className="font-mono text-[10px] text-black bg-[#CCFF00] px-2.5 py-0.5 rounded font-bold">{item.category}</span>
-                      <span className="font-mono text-xs text-gray-300 font-bold">{item.year}</span>
+                      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/95 via-black/10 to-black/30 pointer-events-none"></div>
+                      <div className="absolute inset-0 z-10 bg-[radial-gradient(#9ca3af_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none"></div>
+
+                      <div className="relative z-20 flex items-center justify-between gap-2">
+                        <span className="rounded-full border border-purple-500/40 bg-purple-950/60 px-3 py-1 font-mono text-[9px] font-bold tracking-[0.12em] text-[#CCFF00] md:text-[10px]">AIGC CINEMA // {String(i + 1).padStart(2, '0')}</span>
+                        <span className="hidden rounded-full border border-white/20 bg-black/45 px-3 py-1 font-mono text-[9px] tracking-widest text-white/80 backdrop-blur-sm sm:inline-flex">MUTED · LOOP</span>
+                      </div>
+
+                      <div className="relative z-20">
+                        <h3 className="text-xl font-black leading-[1.05] tracking-[-0.025em] text-white transition-colors group-hover:text-[#CCFF00] md:text-[1.65rem]">{item.title}</h3>
+                        <p className="mt-2 max-w-lg text-[12px] font-normal leading-[1.6] text-gray-300 md:text-[13px]">{item.desc}</p>
+                      </div>
                     </div>
-                    <h3 className="relative z-10 text-xl font-black leading-tight uppercase tracking-[-0.02em] text-white group-hover:text-[#CCFF00] transition-colors">{item.title}</h3>
-                    <p className="relative z-10 text-[13px] leading-relaxed text-gray-300 mt-1.5">{item.desc}</p>
-                  </div>
-                </BorderGlow>
+                  </BorderGlow>
+                </div>
               ))}
+            </div>
+
+            <div className="mt-1 flex items-center justify-center">
+              <div
+                ref={galleryNavRef}
+                role="slider"
+                tabIndex={0}
+                aria-label="拖动或点击切换 AIGC 影片卡片"
+                aria-valuemin={1}
+                aria-valuemax={galleryItems.length}
+                aria-valuenow={activeGalleryIndex + 1}
+                onPointerDown={handleGalleryNavPointerDown}
+                onPointerMove={handleGalleryNavPointerMove}
+                onPointerUp={handleGalleryNavPointerEnd}
+                onPointerCancel={handleGalleryNavPointerEnd}
+                onKeyDown={event => {
+                  if (event.key === 'ArrowLeft') {
+                    event.preventDefault();
+                    focusGalleryCard(Math.max(0, activeGalleryIndex - 1));
+                  } else if (event.key === 'ArrowRight') {
+                    event.preventDefault();
+                    focusGalleryCard(Math.min(galleryItems.length - 1, activeGalleryIndex + 1));
+                  } else if (event.key === 'Home') {
+                    event.preventDefault();
+                    focusGalleryCard(0);
+                  } else if (event.key === 'End') {
+                    event.preventDefault();
+                    focusGalleryCard(galleryItems.length - 1);
+                  }
+                }}
+                className={`motion-pagination-pop relative flex h-14 cursor-ew-resize touch-none select-none items-center justify-center gap-1 rounded-full bg-[#202023] px-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.025),0_12px_30px_rgba(0,0,0,0.24)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 ${isVisible ? 'is-visible' : ''}`}
+              >
+                {galleryItems.map((item, index) => (
+                  <button
+                    key={`gallery-dot-${item.media}`}
+                    type="button"
+                    onClick={() => focusGalleryCard(index)}
+                    aria-label={`切换到第 ${index + 1} 张：${item.title}`}
+                    aria-current={activeGalleryIndex === index ? 'true' : undefined}
+                    className={`relative flex h-10 shrink-0 items-center justify-center transition-[width] duration-300 ease-out ${activeGalleryIndex === index ? 'w-12' : 'w-5'}`}
+                  >
+                    <span className={`block h-2 rounded-full transition-all duration-300 ease-out ${activeGalleryIndex === index ? 'w-10 bg-[#a9a9ae]' : 'w-2 bg-white/75 hover:bg-white'}`}></span>
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className={`cinematic-reveal mt-10 md:mt-14 ${isVisible ? 'is-visible' : ''}`}>
@@ -5895,6 +6083,7 @@ void main() {
               </div>
             </div>
           </div>
+          {galleryLightboxItem && <ImageLightbox item={galleryLightboxItem} onClose={() => setGalleryLightboxItem(null)} />}
         </section>
       );
     };
