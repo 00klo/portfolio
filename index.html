@@ -3875,6 +3875,8 @@
       </a>
     );
 
+    const INLINE_VIDEO_SOUND_EVENT = 'portfolio:inline-video-sound';
+
     const Navbar = ({ audioMuted, setAudioMuted, triggerToast, introComplete }) => {
       const navRef = useRef(null);
       const navItems = [
@@ -3885,6 +3887,12 @@
         { id: 'visual-journal', label: 'VISUAL JOURNAL', secondary: '视觉日志' },
         { id: 'profile', label: 'ABOUT', secondary: '关于我' },
       ];
+
+      useEffect(() => {
+        const syncSoundState = event => setAudioMuted(!Boolean(event.detail));
+        window.addEventListener(INLINE_VIDEO_SOUND_EVENT, syncSoundState);
+        return () => window.removeEventListener(INLINE_VIDEO_SOUND_EVENT, syncSoundState);
+      }, [setAudioMuted]);
 
       useEffect(() => {
         const nav = navRef.current;
@@ -3994,13 +4002,15 @@
                   <button
                     type="button"
                     onClick={() => {
-                      setAudioMuted(!audioMuted);
-                      triggerToast(audioMuted ? "环境音效已开启" : "环境音效已静音");
+                      const nextSoundEnabled = audioMuted;
+                      setAudioMuted(!nextSoundEnabled);
+                      window.dispatchEvent(new CustomEvent(INLINE_VIDEO_SOUND_EVENT, { detail: nextSoundEnabled }));
+                      triggerToast(nextSoundEnabled ? "页面音频已开启" : "页面音频已关闭");
                     }}
-                    aria-label={audioMuted ? '开启环境音效' : '关闭环境音效'}
+                    aria-label={audioMuted ? '打开页面音频' : '关闭页面音频'}
                     aria-pressed={!audioMuted}
-                    className="premium-nav__sound flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-white/[0.18] bg-white/[0.07] text-white hover:bg-[#CCFF00] hover:text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
-                    title="切换环境音频"
+                    className={`premium-nav__sound flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white ${audioMuted ? 'border-white/[0.18] bg-white/[0.07] text-white hover:bg-[#CCFF00] hover:text-black' : 'border-[#CCFF00]/70 bg-[#CCFF00] text-black shadow-[0_0_20px_rgba(204,255,0,0.24)]'}`}
+                    title={audioMuted ? '打开页面音频' : '关闭页面音频'}
                   >
                     {audioMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
                   </button>
@@ -4075,16 +4085,20 @@
     const ImageLightbox = ({ item, onClose }) => {
       const videoRef = useRef(null);
       const [isVideoMuted, setIsVideoMuted] = useState(true);
+      const videoVolume = item?.volume ?? 1;
 
       const toggleVideoSound = event => {
         event.stopPropagation();
         const video = videoRef.current;
         if (!video) return;
         const currentlySilent = video.muted || video.volume === 0;
-        if (currentlySilent && video.volume === 0) video.volume = 1;
+        if (currentlySilent && video.volume === 0) video.volume = videoVolume;
         video.muted = !currentlySilent;
         setIsVideoMuted(video.muted);
       };
+      useEffect(() => {
+        if (videoRef.current) videoRef.current.volume = videoVolume;
+      }, [item, videoVolume]);
       useEffect(() => {
         const handleKeyDown = event => {
           if (event.key === 'Escape') onClose();
@@ -4982,10 +4996,28 @@ void main() {
       );
     };
 
+    const useInlineVideoSound = () => {
+      const [soundEnabled, setSoundEnabled] = useState(false);
+
+      useEffect(() => {
+        const syncSoundState = event => setSoundEnabled(Boolean(event.detail));
+        window.addEventListener(INLINE_VIDEO_SOUND_EVENT, syncSoundState);
+        return () => window.removeEventListener(INLINE_VIDEO_SOUND_EVENT, syncSoundState);
+      }, []);
+
+      const updateSoundEnabled = enabled => {
+        setSoundEnabled(enabled);
+        window.dispatchEvent(new CustomEvent(INLINE_VIDEO_SOUND_EVENT, { detail: enabled }));
+      };
+
+      return [soundEnabled, updateSoundEnabled];
+    };
+
     const MotionSection = ({ setActiveModal }) => {
       const [ref, isVisible] = useScrollReveal();
       const [lightboxItem, setLightboxItem] = useState(null);
       const [activeIndex, setActiveIndex] = useState(0);
+      const [motionSoundEnabled] = useInlineVideoSound();
       const trackRef = useRef(null);
       const cardRefs = useRef([]);
       const scrollFrameRef = useRef(0);
@@ -4996,7 +5028,7 @@ void main() {
       const motionItems = [
         { type: 'MOTION DESIGN // 01', title: '作品集动态展示', desc: '以界面编排、卡片运动与节奏转场呈现作品集视觉系统。', video: './assets/motion-preview/motion-feature-01.mp4', poster: './assets/motion-preview/motion-feature-01-poster.jpg', ratio: 16 / 9, orientation: 'landscape' },
         { type: 'CULTURE FILM // 02', title: '长安十二风味', desc: '以城市饮食文化、人物与地域氛围构建节奏鲜明的风味影像。', video: './assets/motion-preview/motion-changan-flavors.mp4', poster: './assets/motion-preview/motion-changan-flavors-poster.jpg', ratio: 16 / 9, orientation: 'landscape' },
-        { type: 'EVENT FILM // 03', title: '西林沙糖桔推介活动', desc: '记录品牌推介、现场氛围与产品特色的活动宣传影像。', video: './assets/motion-preview/motion-xilin-citrus-event.mp4', poster: './assets/motion-preview/motion-xilin-citrus-event-poster.jpg', ratio: 5 / 2, orientation: 'landscape' },
+        { type: 'EVENT FILM // 03', title: '西林沙糖桔推介活动', desc: '记录品牌推介、现场氛围与产品特色的活动宣传影像。', video: './assets/motion-preview/motion-xilin-citrus-event.mp4', poster: './assets/motion-preview/motion-xilin-citrus-event-poster.jpg', ratio: 5 / 2, orientation: 'landscape', volume: 0.35 },
         { type: 'VIDEO EDIT // 04', title: '动漫节奏混剪', desc: '以多画幅构图、动作节点与音乐节拍组织高密度动漫混剪。', video: './assets/motion-preview/motion-capture-02.mp4', poster: './assets/motion-preview/motion-capture-02-poster.jpg', ratio: 16 / 9, orientation: 'landscape' },
         { type: 'VIDEO EDIT // 05', title: '动漫节奏混剪', desc: '以人物动作、镜头切换与音乐节拍组织高密度动漫混剪。', video: './assets/motion-preview/motion-03.mp4', poster: './assets/motion-preview/motion-03-poster.jpg', ratio: 16 / 9, orientation: 'landscape' },
         { type: 'MOTION PACKAGE // 06', title: '二十四节气视觉包装', desc: '围绕传统节气建立插画、转场与信息动态图形系统。', video: './assets/motion-preview/motion-added-08.mp4', poster: './assets/motion-preview/motion-added-08-poster.jpg', ratio: 16 / 9, orientation: 'landscape' },
@@ -5123,14 +5155,16 @@ void main() {
                   <FoldText text="动态设计" perspective={700} color="#ffffff" />
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={openActiveFilm}
-                className="group/watch inline-flex items-center gap-2 text-sm font-semibold text-sky-400 transition-colors hover:text-sky-300"
-              >
-                观看影片
-                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current text-[9px] transition-transform group-hover/watch:scale-110">▶</span>
-              </button>
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={openActiveFilm}
+                  className="group/watch inline-flex items-center gap-2 text-sm font-semibold text-sky-400 transition-colors hover:text-sky-300"
+                >
+                  观看影片
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current text-[9px] transition-transform group-hover/watch:scale-110">▶</span>
+                </button>
+              </div>
             </div>
 
             <div
@@ -5188,8 +5222,10 @@ void main() {
                       <LazyPreviewVideo
                         src={item.video}
                         poster={item.poster}
-                        ariaLabel={`${item.title} 静音循环预览`}
+                        ariaLabel={`${item.title}${motionSoundEnabled && activeIndex === index ? '有声' : '静音'}循环预览`}
                         isActive={activeIndex === index}
+                        muted={!motionSoundEnabled || activeIndex !== index}
+                        volume={item.volume ?? 1}
                       />
                       <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/95 via-black/15 to-black/35 pointer-events-none"></div>
 
@@ -5197,7 +5233,7 @@ void main() {
                         <span className="font-mono text-[9px] md:text-[10px] text-[#CCFF00] font-bold tracking-[0.12em] bg-purple-950/60 px-3 py-1 rounded-full border border-purple-500/40 whitespace-nowrap">
                           {item.type}
                         </span>
-                        <span className="hidden sm:inline-flex rounded-full border border-white/20 bg-black/45 px-3 py-1 font-mono text-[9px] tracking-widest text-white/80 backdrop-blur-sm whitespace-nowrap">MUTED · LOOP</span>
+                        <span className={`hidden sm:inline-flex rounded-full border px-3 py-1 font-mono text-[9px] tracking-widest backdrop-blur-sm whitespace-nowrap ${motionSoundEnabled && activeIndex === index ? 'border-[#CCFF00]/50 bg-[#CCFF00]/90 text-black' : 'border-white/20 bg-black/45 text-white/80'}`}>{motionSoundEnabled && activeIndex === index ? 'SOUND ON · LOOP' : 'MUTED · LOOP'}</span>
                       </div>
 
                       <div className="relative z-20">
@@ -5262,7 +5298,7 @@ void main() {
       );
     };
 
-    const LazyPreviewVideo = ({ src, poster, className = '', ariaLabel = '作品静音预览', isActive = true }) => {
+    const LazyPreviewVideo = ({ src, poster, className = '', ariaLabel = '作品预览', isActive = true, muted = true, volume = 1 }) => {
       const containerRef = useRef(null);
       const videoRef = useRef(null);
       const [shouldLoad, setShouldLoad] = useState(false);
@@ -5305,9 +5341,13 @@ void main() {
         }
       }, [isInView, shouldLoad, isActive]);
 
+      useEffect(() => {
+        if (videoRef.current) videoRef.current.volume = volume;
+      }, [volume]);
+
       return (
         <div ref={containerRef} className={`absolute inset-0 ${className}`}>
-          <video ref={videoRef} className="h-full w-full object-cover" poster={shouldLoad ? poster : undefined} preload="none" muted loop playsInline aria-label={ariaLabel}>
+          <video ref={videoRef} className="h-full w-full object-cover" poster={shouldLoad ? poster : undefined} preload="none" muted={muted} loop playsInline aria-label={ariaLabel}>
             {shouldLoad && isInView && isActive && <source src={src} type="video/mp4" />}
           </video>
         </div>
@@ -5316,6 +5356,7 @@ void main() {
 
     const ProjectsSection = ({ setActiveModal }) => {
       const [ref, isVisible] = useScrollReveal();
+      const [showreelSoundEnabled] = useInlineVideoSound();
 
       return (
         <section id="projects" className="py-24 md:py-32 bg-[#050308] border-t border-purple-500/20 relative z-10 overflow-hidden isolate">
@@ -5358,6 +5399,8 @@ void main() {
                     <LazyPreviewVideo
                       src="./assets/project-preview/showreel-preview-20s.mp4"
                       poster="./assets/project-preview/showreel-preview-20s-poster.jpg"
+                      muted={!showreelSoundEnabled}
+                      ariaLabel={`精选影片${showreelSoundEnabled ? '有声' : '静音'}循环预览`}
                     />
                     <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/80 via-black/10 to-black/15 pointer-events-none"></div>
                    
@@ -5391,6 +5434,7 @@ void main() {
       const [ref, isVisible] = useScrollReveal();
       const [galleryLightboxItem, setGalleryLightboxItem] = useState(null);
       const [activeGalleryIndex, setActiveGalleryIndex] = useState(0);
+      const [gallerySoundEnabled] = useInlineVideoSound();
       const galleryTrackRef = useRef(null);
       const galleryCardRefs = useRef([]);
       const galleryScrollFrameRef = useRef(0);
@@ -5750,14 +5794,16 @@ void main() {
                   <FoldText text="AIGC CINEMA" perspective={700} color="#ffffff" />
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={openActiveGalleryFilm}
-                className="group/watch mt-6 inline-flex items-center gap-2 text-sm font-semibold text-sky-400 transition-colors hover:text-sky-300 md:mt-0"
-              >
-                观看影片
-                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current text-[9px] transition-transform group-hover/watch:scale-110">▶</span>
-              </button>
+              <div className="mt-6 flex items-center md:mt-0">
+                <button
+                  type="button"
+                  onClick={openActiveGalleryFilm}
+                  className="group/watch inline-flex items-center gap-2 text-sm font-semibold text-sky-400 transition-colors hover:text-sky-300"
+                >
+                  观看影片
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-current text-[9px] transition-transform group-hover/watch:scale-110">▶</span>
+                </button>
+              </div>
             </div>
 
             <div
@@ -5811,16 +5857,15 @@ void main() {
                       <LazyPreviewVideo
                         src={item.media}
                         poster={item.poster}
-                        ariaLabel={`${item.title} 静音循环预览`}
+                        ariaLabel={`${item.title}${gallerySoundEnabled && activeGalleryIndex === i ? '有声' : '静音'}循环预览`}
                         isActive={activeGalleryIndex === i}
+                        muted={!gallerySoundEnabled || activeGalleryIndex !== i}
                         className="pointer-events-none opacity-85 transition-all duration-700 group-hover:scale-[1.025] group-hover:opacity-100"
                       />
                       <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/95 via-black/10 to-black/30 pointer-events-none"></div>
-                      <div className="absolute inset-0 z-10 bg-[radial-gradient(#9ca3af_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none"></div>
-
                       <div className="relative z-20 flex items-center justify-between gap-2">
                         <span className="rounded-full border border-purple-500/40 bg-purple-950/60 px-3 py-1 font-mono text-[9px] font-bold tracking-[0.12em] text-[#CCFF00] md:text-[10px]">AIGC CINEMA // {String(i + 1).padStart(2, '0')}</span>
-                        <span className="hidden rounded-full border border-white/20 bg-black/45 px-3 py-1 font-mono text-[9px] tracking-widest text-white/80 backdrop-blur-sm sm:inline-flex">MUTED · LOOP</span>
+                        <span className={`hidden rounded-full border px-3 py-1 font-mono text-[9px] tracking-widest backdrop-blur-sm sm:inline-flex ${gallerySoundEnabled && activeGalleryIndex === i ? 'border-[#CCFF00]/50 bg-[#CCFF00]/90 text-black' : 'border-white/20 bg-black/45 text-white/80'}`}>{gallerySoundEnabled && activeGalleryIndex === i ? 'SOUND ON · LOOP' : 'MUTED · LOOP'}</span>
                       </div>
 
                       <div className="relative z-20">
